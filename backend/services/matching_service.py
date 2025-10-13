@@ -1,4 +1,5 @@
 """Matching service implementation based on the design doc."""
+
 from typing import List, Dict
 import re
 
@@ -22,13 +23,13 @@ class MatchingService:
             profile_parts.append(f"Looking for: {keywords}")
 
         experience_map = {
-            'entry': 'Entry level position, 0-2 years experience',
-            'mid': 'Mid-level position, 3-5 years experience',
-            'senior': 'Senior position, 5+ years experience'
+            "entry": "Entry level position, 0-2 years experience",
+            "mid": "Mid-level position, 3-5 years experience",
+            "senior": "Senior position, 5+ years experience",
         }
-        profile_parts.append(experience_map.get(experience, ''))
+        profile_parts.append(experience_map.get(experience, ""))
 
-        return ' '.join([p for p in profile_parts if p])
+        return " ".join([p for p in profile_parts if p])
 
     def create_job_profile(self, job: Job) -> str:
         """Create comprehensive job description for embedding."""
@@ -42,7 +43,7 @@ class MatchingService:
         matching = []
 
         for skill in user_skills:
-            pattern = r'\b' + re.escape(skill.lower()) + r'\b'
+            pattern = r"\b" + re.escape(skill.lower()) + r"\b"
             if re.search(pattern, job_lower):
                 matching.append(skill)
 
@@ -54,9 +55,9 @@ class MatchingService:
         """Main ranking function using semantic similarity."""
         # Create user profile embedding
         user_profile = self.create_user_profile(
-            user_data.get('skills', []),
-            user_data.get('keywords', ''),
-            user_data.get('experience', 'entry')
+            user_data.get("skills", []),
+            user_data.get("keywords", ""),
+            user_data.get("experience", "entry"),
         )
         user_embedding = self.ml_service.encode_text(user_profile)
 
@@ -67,22 +68,22 @@ class MatchingService:
         ]
 
         # Calculate similarities
-        similarities = self.ml_service.batch_similarity(
-            user_embedding, job_embeddings
-        )
+        similarities = self.ml_service.batch_similarity(user_embedding, job_embeddings)
 
         # Create matched jobs with scores
         matched_jobs = []
         for job, similarity in zip(jobs, similarities):
             matching_skills = self.extract_matching_skills(
-                user_data.get('skills', []), job.description
+                user_data.get("skills", []), job.description
             )
 
-            matched_jobs.append(MatchedJob(
-                job=job,
-                similarity_score=similarity,
-                matching_skills=matching_skills
-            ))
+            matched_jobs.append(
+                MatchedJob(
+                    job=job,
+                    similarity_score=similarity,
+                    matching_skills=matching_skills,
+                )
+            )
 
         # Sort by similarity and return top K
         matched_jobs.sort(key=lambda x: x.similarity_score, reverse=True)

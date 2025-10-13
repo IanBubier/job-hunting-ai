@@ -1,4 +1,5 @@
 """Adzuna API integration service."""
+
 from typing import List, Dict, Optional
 import time
 import requests
@@ -9,10 +10,12 @@ from models.job_model import Job
 class AdzunaService:
     BASE_URL = "https://api.adzuna.com/v1/api/jobs"
 
-    def __init__(self,
-                 app_id: Optional[str] = None,
-                 app_key: Optional[str] = None,
-                 country: str = 'us'):
+    def __init__(
+        self,
+        app_id: Optional[str] = None,
+        app_key: Optional[str] = None,
+        country: str = "us",
+    ):
         self.app_id = app_id
         self.app_key = app_key
         self.country = country
@@ -26,11 +29,9 @@ class AdzunaService:
             time.sleep(self.rate_limit_delay - elapsed)
         self.last_request_time = time.time()
 
-    def search_jobs(self,
-                    keywords: str,
-                    location: str,
-                    max_results: int = 50,
-                    page: int = 1) -> List[Job]:
+    def search_jobs(
+        self, keywords: str, location: str, max_results: int = 50, page: int = 1
+    ) -> List[Job]:
         """Search for jobs using the Adzuna API.
 
         Returns a list of `Job` objects. On error returns an empty list.
@@ -40,19 +41,19 @@ class AdzunaService:
         url = f"{self.BASE_URL}/{self.country}/search/{page}"
 
         params = {
-            'app_id': self.app_id,
-            'app_key': self.app_key,
-            'results_per_page': min(max_results, 50),
-            'what': keywords,
-            'where': location,
-            'content-type': 'application/json'
+            "app_id": self.app_id,
+            "app_key": self.app_key,
+            "results_per_page": min(max_results, 50),
+            "what": keywords,
+            "where": location,
+            "content-type": "application/json",
         }
 
         try:
             response = requests.get(url, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
-            return self._parse_jobs(data.get('results', []))
+            return self._parse_jobs(data.get("results", []))
 
         except requests.exceptions.RequestException as e:
             # For now, just print the error and return empty list
@@ -66,21 +67,17 @@ class AdzunaService:
         for raw_job in raw_jobs:
             try:
                 job = Job(
-                    id=raw_job.get('id', ''),
-                    title=raw_job.get('title', 'Untitled'),
-                    company=(
-                        raw_job.get('company', {})
-                        .get('display_name', 'Unknown')
-                    ),
+                    id=raw_job.get("id", ""),
+                    title=raw_job.get("title", "Untitled"),
+                    company=(raw_job.get("company", {}).get("display_name", "Unknown")),
                     location=(
-                        raw_job.get('location', {})
-                        .get('display_name', 'Unknown')
+                        raw_job.get("location", {}).get("display_name", "Unknown")
                     ),
-                    description=raw_job.get('description', ''),
-                    salary_min=raw_job.get('salary_min'),
-                    salary_max=raw_job.get('salary_max'),
-                    url=raw_job.get('redirect_url', ''),
-                    posted_date=raw_job.get('created', ''),
+                    description=raw_job.get("description", ""),
+                    salary_min=raw_job.get("salary_min"),
+                    salary_max=raw_job.get("salary_max"),
+                    url=raw_job.get("redirect_url", ""),
+                    posted_date=raw_job.get("created", ""),
                 )
                 jobs.append(job)
             except Exception as e:

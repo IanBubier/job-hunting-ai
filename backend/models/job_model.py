@@ -11,8 +11,8 @@ class Job:
     description: str
     salary_min: Optional[float] = None
     salary_max: Optional[float] = None
-    url: str = ''
-    posted_date: str = ''
+    url: str = ""
+    posted_date: str = ""
 
     def to_dict(self):
         return self.__dict__
@@ -26,8 +26,10 @@ class MatchedJob:
 
     def to_dict(self):
         data = self.job.to_dict()
-        data.update({
-            'match_score': round(self.similarity_score * 100, 2),
-            'matching_skills': self.matching_skills
-        })
+        data.update(
+            {
+                "match_score": round(self.similarity_score * 100, 2),
+                "matching_skills": self.matching_skills,
+            }
+        )
         return data
