@@ -92,12 +92,12 @@ It is recommended that you use a Python virtual environment for this (and all) P
 - Within the virtual environment, enter the following command into the terminal to install all requirements. For all future commands it is assumed that they will be executed from within the virtual environment.
    
     ```bash
-    python -m pip install -U -r requirements.txt
+    python -m pip install -U -r backend/requirements.txt
     ```
 
 ## Update .env<a name="env"></a>
 
-- The included `.env_template` file must be updated with appropriate values, and renamed to `.env`
+- The included `.env.example` file must be updated with appropriate values, and renamed to `.env`
 
 ## Formatting and Linting<a name="formatting"></a>
 This project uses black for formatting, and flake8 for linting.
