@@ -1,0 +1,41 @@
+name: Python Code Quality
+
+on:
+  # Run code quality tests when trying to merge, submitting PR to main
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      # virtual environment not needed - GH Actions run in a
+      # docker container. No other requirements are needed
+      # for basic code quality tests
+      - name: Install requirements
+        run: |
+          pip3 install black
+          pip3 install flake8
+
+      # Check for formatting issues using black
+      # black has been configured such that the
+      # line-length will match pep8
+      - name: Check formatting
+        run: |
+          python3 -m black . --check
+          if [[ $? -ne 0 ]]; then
+            exit 1
+          fi
+      
+      # Check for linting errors using flake8
+      - name: Check linting
+        run: |
+          python3 -m flake8 .
+          if [[ $? -ne 0 ]]; then
+            exit 1
+          fi

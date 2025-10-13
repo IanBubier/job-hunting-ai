@@ -1,0 +1,23 @@
+/* Minimal responsive styles placeholder */
+
+/* Ensure layout scales on small screens */
+@media (max-width: 600px) {
+  body {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .container {
+    padding: 8px;
+  }
+
+  .job-card {
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width: 601px) {
+  body {
+    font-size: 18px;
+  }
+}
