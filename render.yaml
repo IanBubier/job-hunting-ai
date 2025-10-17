@@ -4,7 +4,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
+  buildCommand: pip install -r backend/requirements.txt && python backend/download_model.py
     startCommand: cd backend && gunicorn app:app
     envVars:
       - key: PYTHON_VERSION

@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 import time
 import requests
 
-from models.job_model import Job
+from backend.models.job_model import Job
 
 
 class AdzunaService:

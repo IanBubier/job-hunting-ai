@@ -2,10 +2,10 @@ import os
 import time
 from flask import Blueprint, jsonify, request
 
-from services.adzuna_service import AdzunaService
-from services.ml_service import MLService
-from services.matching_service import MatchingService
-from utils.validators import validate_search_request
+from backend.services.adzuna_service import AdzunaService
+from backend.services.ml_service import MLService
+from backend.services.matching_service import MatchingService
+from backend.utils.validators import validate_search_request
 
 
 job_bp = Blueprint("jobs", __name__)
