@@ -53,36 +53,36 @@ This design covers the MVP (Minimum Viable Product) to be delivered within 5 wee
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         User Browser                         │
+│                         User Browser                        │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │              Frontend (HTML/CSS/JS)                     │ │
-│  │  - User Input Form                                      │ │
-│  │  - Results Display                                      │ │
-│  │  - Error Handling UI                                    │ │
+│  │              Frontend (HTML/CSS/JS)                    │ │
+│  │  - User Input Form                                     │ │
+│  │  - Results Display                                     │ │
+│  │  - Error Handling UI                                   │ │
 │  └─────────────────────┬──────────────────────────────────┘ │
 └────────────────────────┼────────────────────────────────────┘
                          │ HTTPS/JSON
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    Backend Server (Flask)                    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │              API Routes Layer                         │  │
-│  │  /api/search        /api/health                       │  │
-│  └────────────┬─────────────────────────────────────────┘  │
-│               │                                              │
-│  ┌────────────┴─────────────────────────────────────────┐  │
-│  │         Business Logic Layer                          │  │
-│  │  - Request Validation                                 │  │
-│  │  - Response Formatting                                │  │
-│  │  - Error Handling                                     │  │
-│  └────────┬──────────────────────┬──────────────────────┘  │
+│                    Backend Server (Flask)                   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              API Routes Layer                        │   │
+│  │  /api/search        /api/health                      │   │
+│  └────────────┬─────────────────────────────────────────┘   │
+│               │                                             │
+│  ┌────────────┴─────────────────────────────────────────┐   │
+│  │         Business Logic Layer                         │   │
+│  │  - Request Validation                                │   │
+│  │  - Response Formatting                               │   │
+│  │  - Error Handling                                    │   │
+│  └────────┬──────────────────────┬──────────────────────┘   │
 │           │                      │                          │
-│  ┌────────┴────────────┐  ┌──────┴──────────────────────┐  │
-│  │   ML Engine         │  │   External API Client       │  │
-│  │  - SBERT Model      │  │  - Adzuna Integration       │  │
-│  │  - Similarity Calc  │  │  - Rate Limiting            │  │
-│  │  - Ranking          │  │  - Cache Layer              │  │
-│  └─────────────────────┘  └─────────────────────────────┘  │
+│  ┌────────┴────────────┐  ┌──────┴──────────────────────┐   │
+│  │   ML Engine         │  │   External API Client       │   │
+│  │  - SBERT Model      │  │  - Adzuna Integration       │   │
+│  │  - Similarity Calc  │  │  - Rate Limiting            │   │
+│  │  - Ranking          │  │  - Cache Layer              │   │
+│  └─────────────────────┘  └─────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                          │
                          ▼
@@ -195,42 +195,42 @@ class ResultsDisplay {
 **Search Form:**
 ```
 ┌─────────────────────────────────────────────┐
-│  Job Hunting AI Tool                         │
+│  Job Hunting AI Tool                        │
 ├─────────────────────────────────────────────┤
-│                                              │
-│  Skills (comma-separated):                   │
-│  [Python, Machine Learning, Data Analysis ]  │
-│                                              │
-│  Keywords:                                   │
-│  [Data Scientist                          ]  │
-│                                              │
-│  Location:                                   │
-│  [San Francisco, CA                       ]  │
-│                                              │
-│  Experience Level:                           │
+│                                             │
+│  Skills (comma-separated):                  │
+│  [Python, Machine Learning, Data Analysis ] │
+│                                             │
+│  Keywords:                                  │
+│  [Data Scientist                          ] │
+│                                             │
+│  Location:                                  │
+│  [San Francisco, CA                       ] │
+│                                             │
+│  Experience Level:                          │
 │  [▼ Entry Level ]                           │
-│                                              │
-│          [ Find Matching Jobs ]              │
+│                                             │
+│          [ Find Matching Jobs ]             │
 └─────────────────────────────────────────────┘
 ```
 
 **Results Display:**
 ```
 ┌─────────────────────────────────────────────┐
-│  Found 15 matching jobs                      │
+│  Found 15 matching jobs                     │
 ├─────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────┐   │
-│  │ Data Scientist - Junior          95%│   │
-│  │ Tech Company Inc.                   │   │
-│  │ San Francisco, CA                   │   │
-│  │ $80,000 - $100,000                  │   │
-│  │ [View Details] [Apply]              │   │
-│  └─────────────────────────────────────┘   │
-│                                              │
-│  ┌─────────────────────────────────────┐   │
-│  │ Machine Learning Engineer         92%│   │
-│  │ AI Solutions Corp                   │   │
-│  │ ...                                 │   │
+│  ┌─────────────────────────────────────┐    │
+│  │ Data Scientist - Junior          95%│    │
+│  │ Tech Company Inc.                   │    │
+│  │ San Francisco, CA                   │    │
+│  │ $80,000 - $100,000                  │    │
+│  │ [View Details] [Apply]              │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │ Machine Learning Engineer        92%│    │
+│  │ AI Solutions Corp                   │    │
+│  │ ...                                 │    │
 └─────────────────────────────────────────────┘
 ```
 
@@ -239,9 +239,12 @@ class ResultsDisplay {
 #### 3.2.1 Project Structure
 ```
 backend/
+├── __init__.py
 ├── app.py                 # Flask application entry
 ├── config.py              # Configuration management
+├── download_model.py      # Preload ML model
 ├── requirements.txt       # Python dependencies
+├── runtime.txt
 ├── routes/
 │   ├── __init__.py
 │   └── job_routes.py      # API endpoints
@@ -258,6 +261,12 @@ backend/
 │   ├── validators.py      # Input validation
 │   └── formatters.py      # Response formatting
 └── tests/
+│   ├── __init__.py
+│   ├── test_adzuna_service.py
+│   ├── test_matching_service.py
+│   ├── test_ml_service.py
+│   ├── test_routes.py
+│   ├── test_validators.py
     └── test_api.py
 ```
 
@@ -339,50 +348,67 @@ class MatchedJob:
 ```python
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from typing import List, Tuple
+from typing import List
+
 
 class MLService:
-    def __init__(self, model_name='all-MiniLM-L6-v2'):
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         """
         Initialize with lightweight SBERT model
-        Model size: ~80MB, inference: ~10ms per sentence
+        Model size: 82MB, inference time: ~10ms per text
+        384-dimensional embeddings
         """
         self.model = SentenceTransformer(model_name)
-        self._cache = {}  # Simple embedding cache
-    
+        self._cache = {}  # Cache for frequent queries, format - {hash(text): embedding}
+        self.max_cache_size = 1000  # Limit cache size to avoid excessive memory use
+
     def encode_text(self, text: str) -> np.ndarray:
         """
         Generate embedding for input text
-        Returns: 384-dimensional vector
+        Args:
+            text: input string to encode
+        Returns:
+            a 384-dimensional numpy array
         """
-        if text in self._cache:
-            return self._cache[text]
-        
-        embedding = self.model.encode(text, convert_to_numpy=True)
-        self._cache[text] = embedding
+        cache_key = hash(text)
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        embedding = self.model.encode(
+            text, convert_to_numpy=True, normalize_embeddings=True
+        )
+
+        # Simple cache eviction policy: remove oldest entry if cache is full
+        if len(self._cache) >= self.max_cache_size:
+            self._cache.pop(next(iter(self._cache)))
+        self._cache[cache_key] = embedding
         return embedding
-    
-    def calculate_similarity(self, 
-                            embedding1: np.ndarray, 
-                            embedding2: np.ndarray) -> float:
+
+    def calculate_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
         """
-        Calculate cosine similarity between embeddings
-        Returns: Similarity score [0, 1]
+        Calculate cosine similarity between two embeddings
+        Args:
+            emb1: first embedding
+            emb2: second embedding
+        Returns:
+            similarity score between [0.0, 1.0]
         """
-        return float(np.dot(embedding1, embedding2) / 
-                    (np.linalg.norm(embedding1) * np.linalg.norm(embedding2)))
-    
-    def batch_similarity(self,
-                        query_embedding: np.ndarray,
-                        job_embeddings: List[np.ndarray]) -> List[float]:
+        return float(np.dot(emb1, emb2))
+
+    def batch_similarity(
+        self, query_emb: np.ndarray, job_embs: List[np.ndarray]
+    ) -> List[float]:
         """
         Calculate similarity for multiple jobs efficiently
+        Args:
+            query_emb: user profile embedding
+            job_embs: list of job embeddings
+        Returns:
+            list of similarity scores
         """
-        job_matrix = np.vstack(job_embeddings)
-        similarities = np.dot(job_matrix, query_embedding) / (
-            np.linalg.norm(job_matrix, axis=1) * np.linalg.norm(query_embedding)
-        )
-        return similarities.tolist()
+        job_matrix = np.vstack(job_embs)  # Shape: (num_jobs, embedding_dim)
+        dot_products = np.dot(job_matrix, query_emb)  # Shape: (num_jobs,)
+        return dot_products.tolist()
 ```
 
 #### 3.3.2 Matching Service
@@ -394,99 +420,128 @@ from models.job_model import Job, MatchedJob
 from services.ml_service import MLService
 import re
 
+
 class MatchingService:
     def __init__(self, ml_service: MLService):
         self.ml_service = ml_service
-    
-    def create_user_profile(self, 
-                           skills: List[str], 
-                           keywords: str,
-                           experience: str) -> str:
+
+    def create_user_profile(
+        self, skills: List[str], keywords: str, experience: str
+    ) -> str:
         """
         Create comprehensive user profile text for embedding
+        Args:
+            skills: list of user skills
+            keywords: job keywords user is interested in
+            experience: experience level ("entry", "mid", "senior")
+        Returns:
+            concatenated string
         """
         profile_parts = []
-        
+
         if skills:
             profile_parts.append(f"Skills: {', '.join(skills)}")
-        
+
         if keywords:
             profile_parts.append(f"Looking for: {keywords}")
-        
+
         experience_map = {
-            'entry': 'Entry level position, 0-2 years experience',
-            'mid': 'Mid-level position, 3-5 years experience',
-            'senior': 'Senior position, 5+ years experience'
+            "entry": "Entry level position, 0-2 years experience",
+            "mid": "Mid-level position, 3-5 years experience",
+            "senior": "Senior position, 5+ years experience",
         }
-        profile_parts.append(experience_map.get(experience, ''))
-        
-        return ' '.join(profile_parts)
-    
+        profile_parts.append(experience_map.get(experience, ""))
+
+        return " ".join([p for p in profile_parts if p])
+
     def create_job_profile(self, job: Job) -> str:
         """
         Create comprehensive job description for embedding
+        Args:
+            job: Job object
+        Returns:
+            concatenated string
         """
-        return f"{job.title} at {job.company}. {job.description[:500]}"
-    
-    def extract_matching_skills(self, 
-                               user_skills: List[str], 
-                               job_description: str) -> List[str]:
+        desc = job.description[:500] if len(job.description) > 500 else job.description
+        return f"{job.title} at {job.company}. " f"{desc}"
+
+    def extract_matching_skills(
+        self, user_skills: List[str], job_description: str
+    ) -> List[str]:
         """
         Find which user skills appear in job description
+        Args:
+            user_skills: list of user skills
+            job_description: full job description text
+        Returns:
+            list of matching skills
         """
         job_lower = job_description.lower()
         matching = []
-        
+
         for skill in user_skills:
-            # Use word boundaries for better matching
-            pattern = r'\b' + re.escape(skill.lower()) + r'\b'
+            # Use word boundaries to avoid partial matches
+            pattern = r"\b" + re.escape(skill.lower()) + r"\b"
             if re.search(pattern, job_lower):
                 matching.append(skill)
-        
+
         return matching
-    
-    def rank_jobs(self,
-                  user_data: Dict,
-                  jobs: List[Job],
-                  top_k: int = 20) -> List[MatchedJob]:
+
+    def rank_jobs(
+        self, user_data: Dict, jobs: List[Job], top_k: int = 20
+    ) -> List[MatchedJob]:
         """
-        Main ranking function using semantic similarity
+        Main ranking function using semantic similarity and skills matching
+        Args:
+            user_data: dict with keys "skills", "keywords", "experience"
+            jobs: list of Job objects to rank
+            top_k: number of top jobs to return
+        Returns:
+            list of MatchedJob objects with similarity scores
         """
         # Create user profile embedding
         user_profile = self.create_user_profile(
-            user_data.get('skills', []),
-            user_data.get('keywords', ''),
-            user_data.get('experience', 'entry')
+            user_data.get("skills", []),
+            user_data.get("keywords", ""),
+            user_data.get("experience", "entry"),
         )
         user_embedding = self.ml_service.encode_text(user_profile)
-        
+
         # Create job embeddings
         job_profiles = [self.create_job_profile(job) for job in jobs]
-        job_embeddings = [self.ml_service.encode_text(profile) 
-                         for profile in job_profiles]
-        
+        job_embeddings = [
+            self.ml_service.encode_text(profile) for profile in job_profiles
+        ]
+
         # Calculate similarities
-        similarities = self.ml_service.batch_similarity(
-            user_embedding, 
-            job_embeddings
-        )
-        
+        similarities = self.ml_service.batch_similarity(user_embedding, job_embeddings)
+
         # Create matched jobs with scores
         matched_jobs = []
         for job, similarity in zip(jobs, similarities):
             matching_skills = self.extract_matching_skills(
-                user_data.get('skills', []),
-                job.description
+                user_data.get("skills", []), job.description
             )
-            
-            matched_jobs.append(MatchedJob(
-                job=job,
-                similarity_score=similarity,
-                matching_skills=matching_skills
-            ))
-        
-        # Sort by similarity and return top K
-        matched_jobs.sort(key=lambda x: x.similarity_score, reverse=True)
+
+            skills_match_ratio = (
+                (len(matching_skills) / len(user_data.get("skills", [])))
+                if user_data.get("skills", [])
+                else 0
+            )
+
+            final_score = (0.8 * similarity) + (0.2 * skills_match_ratio)
+
+            matched_jobs.append(
+                MatchedJob(
+                    job=job,
+                    similarity_score=similarity,
+                    matching_skills=matching_skills,
+                    final_score=final_score
+                )
+            )
+
+        # Sort by final_score and return top K
+        matched_jobs.sort(key=lambda x: x.final_score, reverse=True)
         return matched_jobs[:top_k]
 ```
 
@@ -946,10 +1001,10 @@ def calculate_similarity(self, emb1, emb2):
 
 **Formula:**
 ```python
-final_score = (0.8 × semantic_similarity) + (0.2 × keyword_match_ratio)
+final_score = (0.8 × semantic_similarity) + (0.2 × skills_match_ratio)
 
 where:
-keyword_match_ratio = matched_skills / total_user_skills
+skills_match_ratio = matched_skills / total_user_skills
 ```
 
 **Example:**
@@ -1370,8 +1425,8 @@ def add_security_headers(response):
 
 ```
 ┌─────────────────────────────────────────┐
-│           Render Platform                │
-│                                          │
+│           Render Platform               │
+│                                         │
 │  ┌────────────────────────────────────┐ │
 │  │     Web Service (Flask App)        │ │
 │  │  - Auto-scaling                    │ │
@@ -1379,7 +1434,7 @@ def add_security_headers(response):
 │  │  - Environment variables           │ │
 │  │  - Health checks                   │ │
 │  └────────────────────────────────────┘ │
-│                                          │
+│                                         │
 │  ┌────────────────────────────────────┐ │
 │  │   Static File Serving (Frontend)   │ │
 │  │  - HTML/CSS/JS                     │ │
@@ -1401,6 +1456,7 @@ job-hunting-ai/
 ├── backend/
 │   ├── app.py                 # Flask entry point
 │   ├── config.py
+│   ├── download_model.py
 │   ├── requirements.txt       # Python dependencies
 │   ├── runtime.txt           # Python version
 │   ├── routes/
@@ -1429,7 +1485,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: pip install -r backend/requirements.txt && python backend/download_model.py
     startCommand: cd backend && gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
@@ -1455,6 +1511,9 @@ sentence-transformers==2.2.2
 numpy==1.24.3
 python-dotenv==1.0.0
 torch==2.0.1
+black==24.4.2
+flake8==7.1.0
+pytest==7.4.0
 ```
 
 **runtime.txt:**
@@ -1614,6 +1673,7 @@ backend/tests/
 ├── test_ml_service.py
 ├── test_matching_service.py
 ├── test_adzuna_service.py
+├── test_api.py
 ├── test_validators.py
 └── test_routes.py
 ```
@@ -1962,15 +2022,18 @@ class JobSearchUser(HttpUser):
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/username/job-hunting-ai.git
+git clone https://github.com/sheepishlass/job-hunting-ai.git
 cd job-hunting-ai
 
 # 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv env
+source env/bin/activate  # On Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r backend/requirements.txt
+
+# 4. Download ML model
+python backend/download_model.py
 
 # 4. Create .env file
 cp .env.example .env
@@ -2133,7 +2196,7 @@ function doStuff() {
 ```
 main (production-ready code)
   ↑
-develop (integration branch)
+dev (integration branch)
   ↑
 feature/* (individual features)
 ```

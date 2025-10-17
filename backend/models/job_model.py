@@ -15,7 +15,21 @@ class Job:
     posted_date: str = ""
 
     def to_dict(self):
-        return self.__dict__
+        return {
+            "id": self.id,
+            "title": self.title,
+            "company": self.company,
+            "location": self.location,
+            "description": self.description,
+            "salary": self.format_salary(),
+            "url": self.url,
+            "posted_date": self.posted_date,
+        }
+
+    def format_salary(self):
+        if self.salary_min and self.salary_max:
+            return f"${self.salary_min:,.0f} - ${self.salary_max:,.0f}"
+        return "Not specified"
 
 
 @dataclass
@@ -25,11 +39,8 @@ class MatchedJob:
     matching_skills: List[str]
 
     def to_dict(self):
-        data = self.job.to_dict()
-        data.update(
-            {
-                "match_score": round(self.similarity_score * 100, 2),
-                "matching_skills": self.matching_skills,
-            }
-        )
-        return data
+        return {
+            **self.job.to_dict(),
+            "match_score": round(self.similarity_score * 100, 2),
+            "matching_skills": self.matching_skills,
+        }

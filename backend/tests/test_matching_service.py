@@ -1,6 +1,12 @@
-from backend.services.matching_service import MatchingService
-from backend.services.ml_service import MLService
-from backend.models.job_model import Job
+import pytest
+from services.matching_service import MatchingService
+from services.ml_service import MLService
+from models.job_model import Job
+
+
+@pytest.fixture
+def ml_service():
+    return MLService()
 
 
 def test_matching_service_rank_empty():

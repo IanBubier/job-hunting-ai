@@ -1,19 +1,25 @@
-"""Matching service implementation based on the design doc."""
-
 from typing import List, Dict
-import re
-
 from models.job_model import Job, MatchedJob
+from services.ml_service import MLService
+import re
 
 
 class MatchingService:
-    def __init__(self, ml_service):
+    def __init__(self, ml_service: MLService):
         self.ml_service = ml_service
 
     def create_user_profile(
         self, skills: List[str], keywords: str, experience: str
     ) -> str:
-        """Create comprehensive user profile text for embedding."""
+        """
+        Create comprehensive user profile text for embedding
+        Args:
+            skills: list of user skills
+            keywords: job keywords user is interested in
+            experience: experience level ("entry", "mid", "senior")
+        Returns:
+            concatenated string
+        """
         profile_parts = []
 
         if skills:
@@ -32,17 +38,32 @@ class MatchingService:
         return " ".join([p for p in profile_parts if p])
 
     def create_job_profile(self, job: Job) -> str:
-        """Create comprehensive job description for embedding."""
-        return f"{job.title} at {job.company}. {job.description[:500]}"
+        """
+        Create comprehensive job description for embedding
+        Args:
+            job: Job object
+        Returns:
+            concatenated string
+        """
+        desc = job.description[:500] if len(job.description) > 500 else job.description
+        return f"{job.title} at {job.company}. " f"{desc}"
 
     def extract_matching_skills(
         self, user_skills: List[str], job_description: str
     ) -> List[str]:
-        """Find which user skills appear in job description."""
+        """
+        Find which user skills appear in job description
+        Args:
+            user_skills: list of user skills
+            job_description: full job description text
+        Returns:
+            list of matching skills
+        """
         job_lower = job_description.lower()
         matching = []
 
         for skill in user_skills:
+            # Use word boundaries to avoid partial matches
             pattern = r"\b" + re.escape(skill.lower()) + r"\b"
             if re.search(pattern, job_lower):
                 matching.append(skill)
@@ -52,7 +73,15 @@ class MatchingService:
     def rank_jobs(
         self, user_data: Dict, jobs: List[Job], top_k: int = 20
     ) -> List[MatchedJob]:
-        """Main ranking function using semantic similarity."""
+        """
+        Main ranking function using semantic similarity and skills matching
+        Args:
+            user_data: dict with keys "skills", "keywords", "experience"
+            jobs: list of Job objects to rank
+            top_k: number of top jobs to return
+        Returns:
+            list of MatchedJob objects with similarity scores
+        """
         # Create user profile embedding
         user_profile = self.create_user_profile(
             user_data.get("skills", []),
@@ -77,14 +106,23 @@ class MatchingService:
                 user_data.get("skills", []), job.description
             )
 
+            skills_match_ratio = (
+                (len(matching_skills) / len(user_data.get("skills", [])))
+                if user_data.get("skills", [])
+                else 0
+            )
+
+            final_score = (0.8 * similarity) + (0.2 * skills_match_ratio)
+
             matched_jobs.append(
                 MatchedJob(
                     job=job,
                     similarity_score=similarity,
                     matching_skills=matching_skills,
+                    final_score=final_score
                 )
             )
 
-        # Sort by similarity and return top K
-        matched_jobs.sort(key=lambda x: x.similarity_score, reverse=True)
+        # Sort by final_score and return top K
+        matched_jobs.sort(key=lambda x: x.final_score, reverse=True)
         return matched_jobs[:top_k]
