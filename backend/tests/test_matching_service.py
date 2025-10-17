@@ -9,9 +9,8 @@ def ml_service():
     return MLService()
 
 
-def test_matching_service_rank_empty():
-    ml = MLService()
-    matcher = MatchingService(ml)
+def test_matching_service_rank_empty(ml_service):
+    matcher = MatchingService(ml_service)
     res = matcher.rank_jobs({"skills": ["Python"]}, [])
     assert isinstance(res, list)
     assert len(res) == 0
