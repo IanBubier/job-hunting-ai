@@ -37,10 +37,12 @@ class MatchedJob:
     job: Job
     similarity_score: float
     matching_skills: List[str]
+    final_score: float
 
     def to_dict(self):
         return {
             **self.job.to_dict(),
-            "match_score": round(self.similarity_score * 100, 2),
+            "similarity_score": round(self.similarity_score * 100, 2),
             "matching_skills": self.matching_skills,
+            "final_score": round(self.final_score * 100, 2),
         }

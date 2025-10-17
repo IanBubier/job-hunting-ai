@@ -1,6 +1,6 @@
 from typing import List, Dict
-from models.job_model import Job, MatchedJob
-from services.ml_service import MLService
+from backend.models.job_model import Job, MatchedJob
+from backend.services.ml_service import MLService
 import re
 
 
@@ -46,7 +46,7 @@ class MatchingService:
             concatenated string
         """
         desc = job.description[:500] if len(job.description) > 500 else job.description
-        return f"{job.title} at {job.company}. " f"{desc}"
+        return f"{job.title} at {job.company}. {desc}"
 
     def extract_matching_skills(
         self, user_skills: List[str], job_description: str
@@ -63,10 +63,17 @@ class MatchingService:
         matching = []
 
         for skill in user_skills:
-            # Use word boundaries to avoid partial matches
-            pattern = r"\b" + re.escape(skill.lower()) + r"\b"
-            if re.search(pattern, job_lower):
-                matching.append(skill)
+            skill_lower = skill.lower()
+            # For skills with special chars (C++, C#, .NET), use simpler match
+            if re.search(r"[^a-zA-Z0-9\s]", skill):
+                # Direct substring search for special-char skills
+                if skill_lower in job_lower:
+                    matching.append(skill)
+            else:
+                # Use word boundaries for alphanumeric skills to avoid partial matches
+                pattern = r"\b" + re.escape(skill_lower) + r"\b"
+                if re.search(pattern, job_lower):
+                    matching.append(skill)
 
         return matching
 
@@ -80,8 +87,12 @@ class MatchingService:
             jobs: list of Job objects to rank
             top_k: number of top jobs to return
         Returns:
-            list of MatchedJob objects with similarity scores
+            list of MatchedJob objects with similarity scores and matching skills,
+            sorted by final score
         """
+        if not jobs:
+            return []
+
         # Create user profile embedding
         user_profile = self.create_user_profile(
             user_data.get("skills", []),
@@ -119,7 +130,7 @@ class MatchingService:
                     job=job,
                     similarity_score=similarity,
                     matching_skills=matching_skills,
-                    final_score=final_score
+                    final_score=final_score,
                 )
             )
 

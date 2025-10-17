@@ -58,6 +58,8 @@ class MLService:
         Returns:
             list of similarity scores
         """
+        if not job_embs:
+            return []
         job_matrix = np.vstack(job_embs)  # Shape: (num_jobs, embedding_dim)
         dot_products = np.dot(job_matrix, query_emb)  # Shape: (num_jobs,)
         return dot_products.tolist()
