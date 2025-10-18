@@ -192,47 +192,20 @@ class ResultsDisplay {
 
 #### 3.1.3 User Interface Mockup
 
-**Search Form:**
-```
-┌─────────────────────────────────────────────┐
-│  Job Hunting AI Tool                        │
-├─────────────────────────────────────────────┤
-│                                             │
-│  Skills (comma-separated):                  │
-│  [Python, Machine Learning, Data Analysis ] │
-│                                             │
-│  Keywords:                                  │
-│  [Data Scientist                          ] │
-│                                             │
-│  Location:                                  │
-│  [San Francisco, CA                       ] │
-│                                             │
-│  Experience Level:                          │
-│  [▼ Entry Level ]                           │
-│                                             │
-│          [ Find Matching Jobs ]             │
-└─────────────────────────────────────────────┘
-```
+#### Landing
+![Landing mockup](./LandingMarkup.png)
 
-**Results Display:**
-```
-┌─────────────────────────────────────────────┐
-│  Found 15 matching jobs                     │
-├─────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────┐    │
-│  │ Data Scientist - Junior          95%│    │
-│  │ Tech Company Inc.                   │    │
-│  │ San Francisco, CA                   │    │
-│  │ $80,000 - $100,000                  │    │
-│  │ [View Details] [Apply]              │    │
-│  └─────────────────────────────────────┘    │
-│                                             │
-│  ┌─────────────────────────────────────┐    │
-│  │ Machine Learning Engineer        92%│    │
-│  │ AI Solutions Corp                   │    │
-│  │ ...                                 │    │
-└─────────────────────────────────────────────┘
-```
+#### Search Form
+![Search form mockup](./SearchFormMarkup.png)
+
+#### Search Form — Interactions
+![Search form interactions](./SearchFormInteractionsMarkup.png)
+
+#### Loading / Generating
+![Loading state](./LoadingMarkup.png)
+
+#### Results Page
+![Results mockup](./Results_Markup.png)
 
 ### 3.2 Backend Component
 
