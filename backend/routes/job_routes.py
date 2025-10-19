@@ -8,7 +8,7 @@ from backend.services.matching_service import MatchingService
 from backend.utils.validators import validate_search_request
 
 
-job_bp = Blueprint("jobs", __name__)
+jobs_bp = Blueprint("jobs_bp", __name__, url_prefix="/jobs")
 
 # Initialize services (in production, replace with DI)
 ml_service = MLService()
@@ -18,7 +18,7 @@ adzuna_service = AdzunaService(
 )
 
 
-@job_bp.route("/search", methods=["POST"])
+@jobs_bp.route("/search", methods=["POST"])
 def search_jobs():
     start_time = time.time()
 
