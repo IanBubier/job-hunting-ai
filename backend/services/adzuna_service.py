@@ -1,11 +1,16 @@
 """Adzuna API integration service."""
 
 from typing import List, Dict, Optional
+import os
 import time
 import requests
 
 from backend.models.job_model import Job
 
+def _env_flag(name: str, default: str = "1") -> bool:
+    """Interpret common truthy/falsey env values."""
+    val = os.getenv(name, default)
+    return str(val).strip().lower() in ("1", "true", "yes", "on")
 
 class AdzunaService:
     BASE_URL = "https://api.adzuna.com/v1/api/jobs"
@@ -16,9 +21,15 @@ class AdzunaService:
         app_key: Optional[str] = None,
         country: str = "us",
     ):
-        self.app_id = app_id
-        self.app_key = app_key
-        self.country = country
+        self.app_id = app_id or os.getenv("ADZUNA_APP_ID")
+        self.app_key = app_key or os.getenv("ADZUNA_APP_KEY")
+        self.country = (country or os.getenv("ADZUNA_COUNTRY", "us")).lower()
+
+        # USE_MOCK from env (default = 1/mock). Set USE_MOCK=0 to go LIVE.
+        self.use_mock = _env_flag("USE_MOCK", default="1")
+        if not self.app_id or not self.app_key:
+            self.use_mock = True
+
         self.rate_limit_delay = 0.1  # seconds between requests
         self.last_request_time = 0.0
 
@@ -36,6 +47,9 @@ class AdzunaService:
 
         Returns a list of `Job` objects. On error returns an empty list.
         """
+        if self.use_mock:
+            return []
+
         self._rate_limit()
 
         url = f"{self.BASE_URL}/{self.country}/search/{page}"
