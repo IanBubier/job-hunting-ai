@@ -21,7 +21,7 @@ img{max-width:100%; display:block}
 .hero-title{font-size:36px; line-height:1.2; margin:0 0 10px}
 .hero-sub{color:var(--muted); margin:0 0 24px}
 
-/* Buttons (shared) */
+/* Buttons */
 .btn{display:inline-block; padding:12px 18px; border-radius:12px; text-decoration:none; font-weight:600; transition:opacity .15s}
 .btn-primary{background:#111; color:#fff; border:1px solid #000}
 .btn-primary:hover{opacity:.92}
