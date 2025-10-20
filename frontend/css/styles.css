@@ -52,7 +52,89 @@ img{max-width:100%; display:block}
   padding:0 20px;
 }
 
+/* Search Form */
+.search-section{ padding:32px 0; }
+.page-title{ margin:0 0 16px; }
+
+/* Fieldset */
+.fs{
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+
+.fs-criteria{ margin-bottom:16px; }
+.fs-actions{ display:flex; justify-content:flex-end; gap:12px; }
+
+/* Form Grid */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.col{ display:grid; gap:16px; }
+
+/* Fields & labels */
+.field{ display:grid; gap:6px; }
+.label{ font-weight:600; }
+
+/* Inputs & selects (shared look) */
+.input, .select{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  font:inherit;
+}
+.input:focus, .select:focus{ outline:none; border-color:#bbb; }
+.input--sm{ max-width:120px; }
+
+/* Inline input with trailing suffix (i.e., “years”) */
+.inline-input{ display:flex; align-items:center; gap:8px; }
+.suffix{ color:var(--muted); }
+
+/* Input with right-aligned icon overlay */
+.input-with-icon{ position:relative; display:block; }
+.input-with-icon .icon{
+  position:absolute; right:12px; top:50%;
+  transform:translateY(-50%);
+  width:18px; height:18px; opacity:.6;
+}
+.icon{ display:inline-block; background-size:contain; background-repeat:no-repeat; }
+.icon-location{ background-image:url('../assets/images/location.svg'); }
+
+/* Select wrapper */
+.select-wrap{ display:block; }
+
+/* Chips (for selected skills) */
+.chips{
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin:6px 0 10px;
+}
+.chips .chip{
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#f3f4f6;
+  font-size:14px;
+}
+.chips .chip button{
+  margin-left:6px;
+  border:0; background:none; cursor:pointer;
+}
+
+/* Checkbox row alignment */
+.field--checkbox .checkbox{ display:flex; align-items:center; gap:8px; }
+
+/* Results area (placeholder styles) */
+.results{ margin-top:24px; }
+
 /* Responsive */
+@media (max-width:800px){
+  .grid{ grid-template-columns:1fr; }
+}
 @media (max-width:640px){
   .hero{padding:48px 0}
   .hero-title{font-size:28px}
