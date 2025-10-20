@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="./index.html">
+        <img src="./assets/images/capstoneLogo.png" alt="Job Hunting AI" height="24" />
+        <span>Job Hunting AI</span>
+      </a>
+      <!--Navigation-->
+      <nav class="nav">
+        <a class="nav-link" href="./index.html">Home</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container search-section">
+      <h1 class="page-title">Find matching jobs</h1>
+
+      <!-- Search Form -->
+      <!-- TODO: Currently form entries get baked into the URL -->
+      <form id="search-form" class="search-form" action="#" method="GET" novalidate>
+        <!-- Criteria -->
+        <fieldset class="fs fs-criteria">
+          <legend>Find Matching Jobs</legend>
+
+          <!-- Left column fields -->
+          <div class="grid">
+            <div class="col">
+              <p class="field">
+                <label for="skills-input" class="label">Skills</label>
+                <!-- chip class for selected skills REF: https://www.w3schools.com/howto/howto_css_contact_chips.asp-->
+                <div class="chips"></div>
+                <input
+                  type="text"
+                  id="skills-input"
+                  name="skills"
+                  class="input"
+                  placeholder="Type to add skills…"
+                  autocomplete="off" />
+              </p>
+
+              <p class="field">
+                <label for="location" class="label">Location</label>
+                <span class="input-with-icon">
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    class="input"
+                    placeholder="San Francisco, CA" />
+                    <!-- location icon overlay-->
+                  <span class="icon icon-location" ></span>
+                </span>
+              </p>
+
+              <p class="field">
+                <label for="experience-years" class="label">Experience</label>
+                <span class="inline-input">
+                  <input
+                    type="number"
+                    id="experience-years"
+                    name="experience_years"
+                    class="input input--sm"
+                    min="0"
+                    step="1"
+                    placeholder="0" />
+                  <span class="suffix">years</span>
+                </span>
+              </p>
+            </div>
+
+            <!-- Right column fields -->
+            <div class="col">
+              <p class="field">
+                <label for="title" class="label">Title / Keywords</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  class="input"
+                  placeholder="Backend Engineer" />
+              </p>
+
+              <p class="field">
+                <label for="distance" class="label">Distance</label>
+                <span class="select-wrap">
+                  <select id="distance" name="distance" class="select">
+                    <option value="10">Within 10 miles</option>
+                    <option value="25" selected>Within 25 miles</option>
+                    <option value="50">Within 50 miles</option>
+                    <option value="100">Within 100 miles</option>
+                    <option value="any">Any distance</option>
+                  </select>
+                </span>
+              </p>
+
+              <p class="field field--checkbox">
+                <label for="remote" class="checkbox">
+                  <input type="checkbox" id="remote" name="remote" value= "1" />
+                  <span>Remote</span>
+                </label>
+              </p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Actions -->
+        <fieldset class="fs fs-actions">
+          <button type="submit" class="btn btn-primary">Find Jobs</button>
+        </fieldset>
+      </form>
+
+      <!-- Results container -->
+      <section id="results" class="results"></section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2025 Ian Bubier, Eduardo Camacho-Lopez, Wei-Yin Chen and Khoi Le</p>
+    </div>
+  </footer>
+</body>
+</html>
