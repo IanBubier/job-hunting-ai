@@ -1,5 +1,4 @@
 from backend.app import create_app
-from backend.routes.job_routes import jobs_bp
 
 
 def test_health_endpoint():
@@ -14,7 +13,6 @@ def test_health_endpoint():
 def test_search_endpoint_basic():
     app = create_app()
     # register the jobs blueprint the same way the real app will
-    app.register_blueprint(jobs_bp, url_prefix="/api")
     client = app.test_client()
 
     payload = {"skills": ["Python"], "keywords": "Developer", "location": "Remote"}
