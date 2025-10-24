@@ -10,7 +10,7 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container header-row">
-      <a class="brand" href="/">
+      <a class="brand" href="{{url_for('about')}}">
         <img src="./assets/images/capstoneLogo.png" alt="Job Hunting AI" height="24" />
         <span>Job Hunting AI</span>
       </a>
@@ -23,7 +23,7 @@
       <div class="container hero-inner">
         <h1 class="hero-title">2025 OSU Capstone</h1>
         <p class="hero-sub">Simple AI-driven job search. Transparent model. Quick Results.</p>
-        <a class="btn btn-primary" href="./search.html">Get started</a>
+        <a class="btn btn-primary" href="{{url_for('jobs_bp.search')}}">Get started</a>
       </div>
     </section>
   </main>

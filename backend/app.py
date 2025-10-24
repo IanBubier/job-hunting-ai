@@ -15,7 +15,7 @@ def create_app():
     from routes.job_routes import jobs_bp
     app.register_blueprint(jobs_bp)
 
-    @app.route('/')
+    @app.route("/")
     def about():
         return render_template("index.html", page_name="Job Hunting AI")
 
