@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
 </head>
 <body>
   <!-- Header -->
   <header class="site-header">
     <div class="container header-row">
       <a class="brand" href="{{url_for('about')}}">
-        <img src="./assets/images/capstoneLogo.png" alt="Job Hunting AI" height="24" />
+        <img src="{{ url_for('static', filename='assets/images/capstoneLogo.png') }}" alt="Job Hunting AI" height="24" />
         <span>Job Hunting AI</span>
       </a>
       <!--Navigation-->

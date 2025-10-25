@@ -1,18 +1,18 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from backend.config import Config
+from routes.job_routes import jobs_bp
 import os
 
 
 def create_app():
     frontend_path = os.path.join(os.path.dirname(__file__), "../Frontend")
-    app = Flask(__name__, template_folder=frontend_path)
+    app = Flask(__name__, template_folder=frontend_path, static_folder=frontend_path, static_url_path="")
     # CORS(app)
 
     # Basic config placeholder
     app.config.from_object(Config)
 
-    from routes.job_routes import jobs_bp
     app.register_blueprint(jobs_bp)
 
     @app.route("/")
@@ -37,12 +37,13 @@ def create_app():
             from backend.services.adzuna_service import AdzunaService
             svc = AdzunaService()
             data = svc.search_jobs("python developer", "New York", max_results=3)
-            mode = "LIVE" if (getattr(svc,"app_id",None) and getattr(svc,"app_key",None)
-                              and not getattr(svc,"use_mock",True)) else "MOCK"
+            mode = "LIVE" if (getattr(svc, "app_id", None) and getattr(svc, "app_key", None)
+                              and not getattr(svc, "use_mock", True)) else "MOCK"
             return jsonify({"mode": mode, "count": len(data), "sample": data[:2]})
         except Exception as e:
-            import traceback; traceback.print_exc()
-            return jsonify({"mode":"UNKNOWN","error": str(e)}), 500
+            import traceback
+            traceback.print_exc()
+            return jsonify({"mode": "UNKNOWN", "error": str(e)}), 500
 
     return app
 
