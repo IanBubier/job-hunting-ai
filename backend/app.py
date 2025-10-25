@@ -1,7 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from backend.config import Config
-from routes.job_routes import jobs_bp
+from backend.routes.job_routes import jobs_bp
 import os
 
 
