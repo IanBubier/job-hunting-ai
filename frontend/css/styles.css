@@ -124,6 +124,10 @@ img{max-width:100%; display:block}
   margin-left:6px;
   border:0; background:none; cursor:pointer;
 }
+/* Hide gap when there are no chips yet */
+.chips:empty {
+  display: none;
+}
 
 /* Checkbox row alignment */
 .field--checkbox .checkbox{ display:flex; align-items:center; gap:8px; }
