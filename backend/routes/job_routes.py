@@ -1,6 +1,6 @@
 import os
 import time
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 
 from backend.services.adzuna_service import AdzunaService
 from backend.services.ml_service import MLService
@@ -8,7 +8,7 @@ from backend.services.matching_service import MatchingService
 from backend.utils.validators import validate_search_request
 
 
-jobs_bp = Blueprint("jobs_bp", __name__, url_prefix="/jobs")
+jobs_bp = Blueprint("jobs_bp", __name__, url_prefix="/search")
 
 # Initialize services (in production, replace with DI)
 ml_service = MLService()
@@ -18,7 +18,12 @@ adzuna_service = AdzunaService(
 )
 
 
-@jobs_bp.route("/search", methods=["POST"])
+@jobs_bp.route("/")
+def search():
+    return render_template("search.html", page_name="Job Search")
+
+
+@jobs_bp.route("/results", methods=["POST"])
 def search_jobs():
     start_time = time.time()
 
@@ -55,14 +60,14 @@ def search_jobs():
         # Format response
         query_time = int((time.time() - start_time) * 1000)
 
-        return jsonify(
-            {
+        results = {
                 "success": True,
                 "count": len(matched_jobs),
                 "query_time_ms": query_time,
-                "results": [job.to_dict() for job in matched_jobs],
-            }
-        )
+                "results": [job.to_dict() for job in matched_jobs]
+        }
+
+        return render_template("results.html", page_name="Job Results", **results)
 
     except Exception as e:
         print(f"Error in search endpoint: {e}")
