@@ -96,7 +96,6 @@ img{max-width:100%; display:block}
 .suffix{ color:var(--muted); }
 
 /* Input with right-aligned icon overlay */
-.input-with-icon{ position:relative; display:block; }
 .input-with-icon .icon{
   position:absolute; right:12px; top:50%;
   transform:translateY(-50%);
@@ -128,7 +127,48 @@ img{max-width:100%; display:block}
 .chips:empty {
   display: none;
 }
+/* Adds an x on the skills to function as a remove button*/
+.remove-chip {
+  background: none;
+  border: none;
+  margin-left: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #888;
+}
 
+.remove-chip:hover {
+  color: #000;
+}
+/* Plus icon in skills field */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  transition: color 0.2s ease;
+}
+
+.icon-button:hover {
+  color: #000;
+}
+
+.icon-plus {
+  width: 18px;
+  height: 18px;
+}
 /* Checkbox row alignment */
 .field--checkbox .checkbox{ display:flex; align-items:center; gap:8px; }
 
