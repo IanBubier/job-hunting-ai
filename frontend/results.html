@@ -7,28 +7,20 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
 </head>
 <body>
-
-  <!-- Header -->
+  
+<!-- Header -->
   <header class="site-header">
     <div class="container header-row">
-      <a class="brand" href={{url_for('about')}}/">
+      <a class="brand" href="{{ url_for('about') }}">
         <img src="{{ url_for('static', filename='assets/images/capstoneLogo.png') }}" alt="Job Hunting AI" height="24" />
         <span>Job Hunting AI</span>
       </a>
       <nav class="nav">
-        <a class="nav-link" href="{{url_for('about')}}">Home</a>
+        <a class="nav-link" href="{{ url_for('about') }}">Home</a>
       </nav>
     </div>
   </header>
 
-  <!-- Hero -->
-  <main>
-    <section class="hero">
-      <div class="container hero-inner">
-        <h1 class="hero-title">Results</h1>
-      </div>
-    </section>
-  </main>
 
   <!-- Footer -->
   <footer class="site-footer">
