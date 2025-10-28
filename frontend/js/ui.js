@@ -83,3 +83,31 @@ class ResultsDisplay {
 // Export for other modules (if using bundler)
 window.SearchForm = SearchForm;
 window.ResultsDisplay = ResultsDisplay;
+
+// Skill input + button interaction
+document.addEventListener('DOMContentLoaded', () => {
+  const addSkillBtn = document.getElementById('add-skill-btn');
+  const skillsInput = document.getElementById('skills-input');
+  const chipsContainer = document.querySelector('.chips');
+
+  if (!addSkillBtn || !skillsInput || !chipsContainer) return;
+
+  addSkillBtn.addEventListener('click', () => {
+    const skill = skillsInput.value.trim();
+    if (skill) {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = skill;
+
+      // Add remove "x" for chip deletion
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-chip';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => chip.remove());
+      chip.appendChild(removeBtn);
+
+      chipsContainer.appendChild(chip);
+      skillsInput.value = '';
+    }
+  });
+});
