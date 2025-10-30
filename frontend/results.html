@@ -21,7 +21,41 @@
     </div>
   </header>
 
+  <!-- Results -->
+  <main>
+  <section class="results-section">
+    <h1 class="page-title">Search Results</h1>
 
+    <!-- Summary Container -->
+    <div class="results-summary">
+      <p><strong>Found X matching jobs</strong></p>
+      <p class="criteria">(criteria summary here)</p>
+    </div>
+
+    <!-- Sorting and Filters -->
+    <div class="results-controls">
+      <label for="sort" class="label">Sort by:</label>
+      <select id="sort" name="sort" class="select">
+        <option value="relevance">Relevance</option>
+        <option value="recent">Most Recent</option>
+        <option value="location">Location</option>
+      </select>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="results-list">
+      <!-- Example card -->
+      <article class="job-card">
+        <h2 class="job-title">Job Title</h2>
+        <p class="job-meta"><strong>Company Name</strong> — Location</p>
+        <p class="job-description"> Description Here...</p>
+        <a href="#" class="btn btn-primary">View Details</a>
+      </article>
+    </div>
+  </section>
+</main>
+
+  
   <!-- Footer -->
   <footer class="site-footer">
     <div class="container">
