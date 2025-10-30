@@ -2,6 +2,9 @@ from typing import List, Dict
 from backend.models.job_model import Job, MatchedJob
 from backend.services.ml_service import MLService
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MatchingService:

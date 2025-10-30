@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from backend.config import Config
 from backend.routes.job_routes import jobs_bp
+from werkzeug.exceptions import HTTPException
 import os
 
 
@@ -14,6 +15,18 @@ def create_app():
     app.config.from_object(Config)
 
     app.register_blueprint(jobs_bp)
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        if isinstance(e, HTTPException):
+            status = e.code or 500
+            if status >= 500:
+                app.logger.exception("http_error")
+            else:
+                app.logger.info("client_error")
+            return jsonify({"success": False, "error": {"code": status, "message": e.description}}), status
+        app.logger.exception("unhandled_exception")
+        return jsonify({"success": False, "error": {"code": 500, "message": "An unexpected error occurred"}}), 500
 
     @app.route("/")
     def about():
