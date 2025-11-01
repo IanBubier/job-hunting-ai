@@ -2,6 +2,9 @@ from typing import List, Dict
 from backend.models.job_model import Job, MatchedJob
 from backend.services.ml_service import MLService
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MatchingService:
@@ -9,7 +12,7 @@ class MatchingService:
         self.ml_service = ml_service
 
     def create_user_profile(
-        self, skills: List[str], keywords: str, experience: str
+        self, skills: List[str], keywords: str, experience: int
     ) -> str:
         """
         Create comprehensive user profile text for embedding
@@ -28,12 +31,14 @@ class MatchingService:
         if keywords:
             profile_parts.append(f"Looking for: {keywords}")
 
-        experience_map = {
-            "entry": "Entry level position, 0-2 years experience",
-            "mid": "Mid-level position, 3-5 years experience",
-            "senior": "Senior position, 5+ years experience",
-        }
-        profile_parts.append(experience_map.get(experience, ""))
+        if experience < 3:
+            profile_parts.append("Entry level position, 0-2 years experience")
+
+        elif experience < 6:
+            profile_parts.append("Mid-level position, 3-5 years experience")
+
+        else:
+            profile_parts.append("Senior position, 5+ years experience")
 
         return " ".join([p for p in profile_parts if p])
 
@@ -97,7 +102,7 @@ class MatchingService:
         user_profile = self.create_user_profile(
             user_data.get("skills", []),
             user_data.get("keywords", ""),
-            user_data.get("experience", "entry"),
+            user_data.get("experience", 0),
         )
         user_embedding = self.ml_service.encode_text(user_profile)
 
