@@ -30,9 +30,7 @@
     <div class="results-summary">
         {% if count %}
           <p><strong>Found {{ count }} matching jobs</strong></p>
-          {% if criteria %}
-            <p class="criteria">(criteria: {{ criteria }})</p>
-          {% endif %}
+        {% endif %}
         {% else %}
           <p><strong>No jobs found.</strong></p>
         {% endif %}
@@ -50,27 +48,33 @@
 
     <!-- Results Grid -->
     <div class="results-list">
-      <!-- Job card -->
-      <div class="job-card">
-            <div class="job-header">
-              <h2>{{ job.title }}</h2>
-              {% if job.match_score %}
-                <span class="match-score">{{ job.match_score }}%</span>
-              {% endif %}
-            </div>
-            <p><strong>{{ job.company }}</strong></p>
-            <p>{{ job.location }}</p>
-            {% if job.salary_min and job.salary_max %}
-              <p>${{ job.salary_min }} – ${{ job.salary_max }}</p>
-            {% endif %}
-            {% if job.url %}
-              <a href="{{ job.url }}" target="_blank" class="btn btn-secondary">View Job</a>
-            {% endif %}
-          </div>
-        {% else %}
-          <p>No job results available.</p>
-        {% endfor %}
+      {% for job in results %}
+
+    <!-- Job card -->
+    <div class="job-card">
+      <div class="job-header">
+        <h2>{{ job.title }}</h2>
+        {% if job.final_score %}
+        <span class="match-score">{{ job.final_score }}%</span>
+        {% endif %}
       </div>
+      <p><strong>{{ job.company }}</strong></p>
+      <p>{{ job.location }}</p>
+      {% if job.salary_min and job.salary_max %}
+        <p>${{ job.salary_min }} – ${{ job.salary_max }}</p>
+      {% endif %}
+      {% if job.url %}
+        <!-- Link will be stylized as "View Job" -->
+        <a href="{{ job.url }}" target="_blank" class="btn btn-secondary">View Job</a>
+      {% endif %}
+      {% if job.posted_date %}
+        <p class="posted-date">Posted: {{ job.posted_date }}</p>
+      {% endif %}
+    </div>
+      {% else %}
+        <p>No job results available.</p>
+      {% endfor %}
+    </div>
     </section>
   </main>
 
