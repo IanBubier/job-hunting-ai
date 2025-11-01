@@ -28,9 +28,15 @@
 
     <!-- Summary Container -->
     <div class="results-summary">
-      <p><strong>Found X matching jobs</strong></p>
-      <p class="criteria">(criteria summary here)</p>
-    </div>
+        {% if count %}
+          <p><strong>Found {{ count }} matching jobs</strong></p>
+          {% if criteria %}
+            <p class="criteria">(criteria: {{ criteria }})</p>
+          {% endif %}
+        {% else %}
+          <p><strong>No jobs found.</strong></p>
+        {% endif %}
+      </div>
 
     <!-- Sorting and Filters -->
     <div class="results-controls">
@@ -44,16 +50,29 @@
 
     <!-- Results Grid -->
     <div class="results-list">
-      <!-- Example card -->
-      <article class="job-card">
-        <h2 class="job-title">Job Title</h2>
-        <p class="job-meta"><strong>Company Name</strong> — Location</p>
-        <p class="job-description"> Description Here...</p>
-        <a href="#" class="btn btn-primary">View Details</a>
-      </article>
-    </div>
-  </section>
-</main>
+      <!-- Job card -->
+      <div class="job-card">
+            <div class="job-header">
+              <h2>{{ job.title }}</h2>
+              {% if job.match_score %}
+                <span class="match-score">{{ job.match_score }}%</span>
+              {% endif %}
+            </div>
+            <p><strong>{{ job.company }}</strong></p>
+            <p>{{ job.location }}</p>
+            {% if job.salary_min and job.salary_max %}
+              <p>${{ job.salary_min }} – ${{ job.salary_max }}</p>
+            {% endif %}
+            {% if job.url %}
+              <a href="{{ job.url }}" target="_blank" class="btn btn-secondary">View Job</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <p>No job results available.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
 
   
   <!-- Footer -->
