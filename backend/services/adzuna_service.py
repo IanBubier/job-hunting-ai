@@ -4,8 +4,10 @@ from typing import List, Dict, Optional
 import os
 import time
 import requests
-
 from backend.models.job_model import Job
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _env_flag(name: str, default: str = "1") -> bool:
     """Interpret common truthy/falsey env values."""
@@ -41,7 +43,7 @@ class AdzunaService:
         self.last_request_time = time.time()
 
     def search_jobs(
-        self, keywords: str, location: str, max_results: int = 50, page: int = 1
+        self, keywords: str or None, location: str or None, distance: str or None, max_results: int = 50, page: int = 1
     ) -> List[Job]:
         """Search for jobs using the Adzuna API.
 
@@ -60,18 +62,17 @@ class AdzunaService:
             "results_per_page": min(max_results, 50),
             "what": keywords,
             "where": location,
-            "content-type": "application/json",
+            "distance": distance
         }
 
         try:
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, headers={"content-type": "application/json"}, timeout=10)
             response.raise_for_status()
             data = response.json()
             return self._parse_jobs(data.get("results", []))
 
-        except requests.exceptions.RequestException as e:
-            # For now, just print the error and return empty list
-            print(f"Error fetching jobs: {e}")
+        except requests.exceptions.RequestException:
+            logger.exception("adzuna.fetch_failed", extra={"ctx": {"url": url, "params": params}})
             return []
 
     def _parse_jobs(self, raw_jobs: List[Dict]) -> List[Job]:
@@ -79,23 +80,19 @@ class AdzunaService:
         jobs: List[Job] = []
 
         for raw_job in raw_jobs:
-            try:
-                job = Job(
-                    id=raw_job.get("id", ""),
-                    title=raw_job.get("title", "Untitled"),
-                    company=(raw_job.get("company", {}).get("display_name", "Unknown")),
-                    location=(
-                        raw_job.get("location", {}).get("display_name", "Unknown")
-                    ),
-                    description=raw_job.get("description", ""),
-                    salary_min=raw_job.get("salary_min"),
-                    salary_max=raw_job.get("salary_max"),
-                    url=raw_job.get("redirect_url", ""),
-                    posted_date=raw_job.get("created", ""),
-                )
-                jobs.append(job)
-            except Exception as e:
-                print(f"Error parsing job: {e}")
-                continue
+            job = Job(
+                id=raw_job.get("id", ""),
+                title=raw_job.get("title", "Untitled"),
+                company=(raw_job.get("company", {}).get("display_name", "Unknown")),
+                location=(
+                    raw_job.get("location", {}).get("display_name", "Unknown")
+                ),
+                description=raw_job.get("description", ""),
+                salary_min=raw_job.get("salary_min"),
+                salary_max=raw_job.get("salary_max"),
+                url=raw_job.get("redirect_url", ""),
+                posted_date=raw_job.get("created", ""),
+            )
+            jobs.append(job)
 
         return jobs
