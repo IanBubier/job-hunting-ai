@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(err.message);
       return;
     }
-
+    // DEBUG: print data before sending
     console.log('Submitting search:', data);
     resultsContainer.innerHTML = '<p>Loading...</p>';
 

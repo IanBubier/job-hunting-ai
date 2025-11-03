@@ -96,6 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!addSkillBtn || !skillsInput || !chipsContainer) return;
 
+  function updateSkillsInput() {
+  const chips = Array.from(chipsContainer.querySelectorAll('.chip'))
+    .map(chip => chip.childNodes[0].textContent.trim());
+  document.querySelector('#skills-input').value = chips.join(',');
+}
+
   addSkillBtn.addEventListener('click', () => {
     const skill = skillsInput.value.trim();
     if (skill) {
@@ -107,11 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-chip';
       removeBtn.textContent = '×';
-      removeBtn.addEventListener('click', () => chip.remove());
+      removeBtn.addEventListener('click', () => {
+        chip.remove();
+        updateSkillsInput();
+      });
       chip.appendChild(removeBtn);
 
       chipsContainer.appendChild(chip);
       skillsInput.value = '';
+      updateSkillsInput();
     }
   });
 });
