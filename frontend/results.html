@@ -28,23 +28,19 @@
 
     <!-- Summary Container -->
     <div class="results-summary">
-        {% if count %}
-          <p><strong>Found {{ count }} matching jobs</strong></p>
-        {% endif %}
-        {% else %}
-          <p><strong>No jobs found.</strong></p>
-        {% endif %}
-      </div>
+      {% if count %}
+      <p><strong>Found {{ count }} matching jobs</strong></p>
+    {% else %}
+      <p><strong>No jobs found.</strong></p>
+    {% endif %}
+    </div>
 
     <!-- Sorting and Filters -->
-    <div class="results-controls">
-      <label for="sort" class="label">Sort by:</label>
-      <select id="sort" name="sort" class="select">
-        <option value="relevance">Relevance</option>
-        <option value="recent">Most Recent</option>
-        <option value="location">Location</option>
-      </select>
-    </div>
+    <label for="sort" class="sort-label">Sort by:</label>
+    <select id="sort" class="sort-select">
+      <option>Relevance</option>
+      <option>Most Recent</option>
+    </select>
 
     <!-- Results Grid -->
     <div class="results-list">
