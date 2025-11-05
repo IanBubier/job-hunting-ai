@@ -27,7 +27,7 @@
 
       <!-- Search Form -->
       <!-- TODO: Currently form entries get baked into the URL -->
-      <form id="search-form" class="search-form" action="#" method="GET" novalidate>
+      <form id="search-form" class="search-form" method="POST" novalidate>
         <!-- Criteria -->
         <fieldset class="fs fs-criteria">
           <legend>Find Matching Jobs</legend>
@@ -77,8 +77,8 @@
                 <span class="inline-input">
                   <input
                     type="number"
-                    id="experience-years"
-                    name="experience_years"
+                    id="experience"
+                    name="experience"
                     class="input input--sm"
                     min="0"
                     step="1"
@@ -128,11 +128,14 @@
           <button type="submit" class="btn btn-primary">Find Jobs</button>
         </fieldset>
       </form>
+      <!--
+      The results div below is updated dynamically by app.js when the user
+      submits the form. The page is then replaced by results.html rendered by Flask.
+      -->
+      <div id="results" class="search-feedback"></div>
+      </section>
+    </main>
 
-      <!-- Results container -->
-      <section id="results" class="results"></section>
-    </section>
-  </main>
 
   <footer class="site-footer">
     <div class="container">
@@ -140,5 +143,6 @@
     </div>
   </footer>
   <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

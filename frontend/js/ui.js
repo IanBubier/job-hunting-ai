@@ -1,4 +1,4 @@
-// Minimal UI helpers for the frontend
+// UI helpers for the frontend
 
 class SearchForm {
   constructor(formElement) {
@@ -7,7 +7,9 @@ class SearchForm {
       skills: '',
       keywords: '',
       location: '',
-      experience: 'entry'
+      experience: 'entry',
+      distance: '25',
+      remote: '1'
     };
   }
 
@@ -18,6 +20,8 @@ class SearchForm {
       keywords: fd.get('keywords') || '',
       location: fd.get('location') || '',
       experience: fd.get('experience') || 'entry',
+      distance: fd.get('distance') || '25',
+      remote: fd.get('remote') === '1',  // remote == true if checked, false otherwise
       max_results: parseInt(fd.get('max_results') || '20', 10)
     };
   }
@@ -92,6 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!addSkillBtn || !skillsInput || !chipsContainer) return;
 
+  function updateSkillsInput() {
+  const chips = Array.from(chipsContainer.querySelectorAll('.chip'))
+    .map(chip => chip.childNodes[0].textContent.trim());
+  document.querySelector('#skills-input').value = chips.join(',');
+}
+
   addSkillBtn.addEventListener('click', () => {
     const skill = skillsInput.value.trim();
     if (skill) {
@@ -103,11 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-chip';
       removeBtn.textContent = '×';
-      removeBtn.addEventListener('click', () => chip.remove());
+      removeBtn.addEventListener('click', () => {
+        chip.remove();
+        updateSkillsInput();
+      });
       chip.appendChild(removeBtn);
 
       chipsContainer.appendChild(chip);
       skillsInput.value = '';
+      updateSkillsInput();
     }
   });
 });
