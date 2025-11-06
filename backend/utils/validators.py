@@ -56,10 +56,13 @@ def validate_search_request(data: Dict) -> Tuple[bool, Optional[Dict]]:
         errors["location"] = "Location must be less than 100 characters"
 
     # Validate experience
-    experience = data.get("experience", "entry")
-    valid_levels = ["entry", "mid", "senior"]
-    if experience not in valid_levels:
-        errors["experience"] = "Experience must be one of: " + ", ".join(valid_levels)
+    experience = data.get("experience", "")
+    if not isinstance(experience, str):
+        errors["experience"] = "Experience must be a string"
+    elif not experience.isdigit():
+        errors["experience"] = "Experience must contain only digits"
+    elif int(experience) < 0:
+        errors["experience"] = "Experience must not be negative"
 
     # Validate max_results
     max_results = data.get("max_results", 20)
