@@ -42,16 +42,15 @@ def search_jobs():
         distance=data.get("distance", None),
         max_results=data.get("max_results", 50),
     )
-
+    # process null searches
     if not jobs:
-        return jsonify(
-            {
-                "success": True,
-                "count": 0,
-                "results": [],
-                "message": "No jobs found matching criteria",
-            }
-        )
+        results = {
+            "success": True,
+            "count": 0,
+            "query_time_ms": int((time.time() - start_time)*1000),
+            "results": []
+        }
+    return render_template("results.html", page_name="Job Results", **results)
 
     # Rank jobs using ML
     matched_jobs = matching_service.rank_jobs(
