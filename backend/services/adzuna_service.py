@@ -9,10 +9,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def _env_flag(name: str, default: str = "1") -> bool:
     """Interpret common truthy/falsey env values."""
     val = os.getenv(name, default)
     return str(val).strip().lower() in ("1", "true", "yes", "on")
+
 
 class AdzunaService:
     BASE_URL = "https://api.adzuna.com/v1/api/jobs"
@@ -43,10 +45,10 @@ class AdzunaService:
         self.last_request_time = time.time()
 
     def search_jobs(
-        self, keywords: str or None, location: str or None, distance: str or None, max_results: int = 50, page: int = 1
+        self, keywords: Optional[str], location: Optional[str], distance: Optional[str], max_results: int = 50, page: int = 1
     ) -> List[Job]:
-        """Search for jobs using the Adzuna API.
-
+        """
+        Search for jobs using the Adzuna API.
         Returns a list of `Job` objects. On error returns an empty list.
         """
         if self.use_mock:

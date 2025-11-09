@@ -11,7 +11,7 @@ See `frontend/` and `backend/` folders for implementation.
 - [Setting Up Python Virtual Environment](#venv)
 - [Install Requirements](#reqs)
 - [Update .env](#env)
-- [Start the Server](#start)
+- [Set PYTHONPATH and Start the Server](#start)
 - [Formatting and Linting](#formatting)
 - [Contributors](#contributors)
 - [README Citation](#citation)
@@ -106,6 +106,13 @@ It is recommended that you use a Python virtual environment for this (and all) P
 ## Update .env<a name="env"></a>
 
 - The included `.env.example` file must be updated with appropriate values, and renamed to `.env`
+
+# Set PYTHONPATH and Start the Server<a name="start"></a>
+- `export PYTHONPATH="${PYTHONPATH}:$(pwd)"`
+Run the following command to start the server:
+- `gunicorn --bind 0.0.0.0:portnum wsgi:app -D`
+
+Where portnum is an unused port on the host machine.
 
 ## Formatting and Linting<a name="formatting"></a>
 
