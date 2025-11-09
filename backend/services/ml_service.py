@@ -27,7 +27,7 @@ class MLService:
             a 384-dimensional numpy array
         """
         # Use hashlib to create a deterministic hash for caching
-        cache_key = hashlib.md5(text.encode('utf-8')).hexdigest()
+        cache_key = hashlib.md5(text.encode("utf-8")).hexdigest()
         if cache_key in self._cache:
             return self._cache[cache_key]
 

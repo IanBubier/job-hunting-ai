@@ -45,7 +45,12 @@ class AdzunaService:
         self.last_request_time = time.time()
 
     def search_jobs(
-        self, keywords: Optional[str], location: Optional[str], distance: Optional[str], max_results: int = 50, page: int = 1
+        self,
+        keywords: Optional[str],
+        location: Optional[str],
+        distance: Optional[str],
+        max_results: int = 50,
+        page: int = 1,
     ) -> List[Job]:
         """
         Search for jobs using the Adzuna API.
@@ -64,17 +69,24 @@ class AdzunaService:
             "results_per_page": min(max_results, 50),
             "what": keywords,
             "where": location,
-            "distance": distance
+            "distance": distance,
         }
 
         try:
-            response = requests.get(url, params=params, headers={"content-type": "application/json"}, timeout=10)
+            response = requests.get(
+                url,
+                params=params,
+                headers={"content-type": "application/json"},
+                timeout=10,
+            )
             response.raise_for_status()
             data = response.json()
             return self._parse_jobs(data.get("results", []))
 
         except requests.exceptions.RequestException:
-            logger.exception("adzuna.fetch_failed", extra={"ctx": {"url": url, "params": params}})
+            logger.exception(
+                "adzuna.fetch_failed", extra={"ctx": {"url": url, "params": params}}
+            )
             return []
 
     def _parse_jobs(self, raw_jobs: List[Dict]) -> List[Job]:
@@ -86,9 +98,7 @@ class AdzunaService:
                 id=raw_job.get("id", ""),
                 title=raw_job.get("title", "Untitled"),
                 company=(raw_job.get("company", {}).get("display_name", "Unknown")),
-                location=(
-                    raw_job.get("location", {}).get("display_name", "Unknown")
-                ),
+                location=(raw_job.get("location", {}).get("display_name", "Unknown")),
                 description=raw_job.get("description", ""),
                 salary_min=raw_job.get("salary_min"),
                 salary_max=raw_job.get("salary_max"),

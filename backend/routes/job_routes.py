@@ -36,18 +36,15 @@ def search_jobs():
         # Validate request
         is_valid, error = validate_search_request(data)
         if not is_valid:
-            return jsonify({
-                "success": False,
-                "error": error
-                }), 400
+            return jsonify({"success": False, "error": error}), 400
 
         # Sanitize text inputs (defense-in-depth, though Jinja2 auto-escapes)
-        if 'keywords' in data:
-            data['keywords'] = sanitize_input(data['keywords'])
-        if 'location' in data:
-            data['location'] = sanitize_input(data['location'])
-        if 'skills' in data and isinstance(data['skills'], list):
-            data['skills'] = [sanitize_input(skill) for skill in data['skills']]
+        if "keywords" in data:
+            data["keywords"] = sanitize_input(data["keywords"])
+        if "location" in data:
+            data["location"] = sanitize_input(data["location"])
+        if "skills" in data and isinstance(data["skills"], list):
+            data["skills"] = [sanitize_input(skill) for skill in data["skills"]]
 
         # Fetch jobs from Adzuna
         # Combine keywords and skills for better Adzuna search results
@@ -64,12 +61,17 @@ def search_jobs():
         )
 
         if not jobs:
-            return jsonify({
-                "success": True,
-                "count": 0,
-                "results": [],
-                "message": "No jobs found matching criteria",
-                }), 200
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "count": 0,
+                        "results": [],
+                        "message": "No jobs found matching criteria",
+                    }
+                ),
+                200,
+            )
 
         # Rank jobs using ML
         matched_jobs = matching_service.rank_jobs(
@@ -80,16 +82,16 @@ def search_jobs():
         query_time = int((time.time() - start_time) * 1000)
 
         results = {
-                "success": True,
-                "count": len(matched_jobs),
-                "query_time_ms": query_time,
-                "results": [job.to_dict() for job in matched_jobs]
+            "success": True,
+            "count": len(matched_jobs),
+            "query_time_ms": query_time,
+            "results": [job.to_dict() for job in matched_jobs],
         }
 
-        logger.info("search_ok", extra={"ctx": {
-            "count": results["count"],
-            "query_time_ms": query_time
-        }})
+        logger.info(
+            "search_ok",
+            extra={"ctx": {"count": results["count"], "query_time_ms": query_time}},
+        )
 
         # Render results page directly
         return render_template("results.html", page_name="Job Results", **results)
@@ -99,10 +101,15 @@ def search_jobs():
         logger.exception("search_failed", extra={"ctx": {"error": str(e)}})
 
         # Return user-friendly error response
-        return jsonify({
-            "success": False,
-            "error": {
-                "code": 500,
-                "message": "An error occurred while searching for jobs. Please try again."
-            }
-            }), 500
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": {
+                        "code": 500,
+                        "message": "An error occurred while searching for jobs. Please try again.",
+                    },
+                }
+            ),
+            500,
+        )
