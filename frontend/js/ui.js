@@ -19,7 +19,7 @@ class SearchForm {
       skills: fd.get('skills') ? fd.get('skills').split(',').map(s => s.trim()).filter(Boolean) : [],
       keywords: fd.get('keywords') || '',
       location: fd.get('location') || '',
-      experience: fd.get('experience') || 'entry',
+      experience: fd.get('experience') || '0',
       distance: fd.get('distance') || '25',
       remote: fd.get('remote') === '1',  // remote == true if checked, false otherwise
       max_results: parseInt(fd.get('max_results') || '20', 10)

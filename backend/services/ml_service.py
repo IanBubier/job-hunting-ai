@@ -2,8 +2,10 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from typing import List
 import logging
+import hashlib
 
 logger = logging.getLogger(__name__)
+
 
 class MLService:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
@@ -24,7 +26,8 @@ class MLService:
         Returns:
             a 384-dimensional numpy array
         """
-        cache_key = hash(text)
+        # Use hashlib to create a deterministic hash for caching
+        cache_key = hashlib.md5(text.encode("utf-8")).hexdigest()
         if cache_key in self._cache:
             return self._cache[cache_key]
 

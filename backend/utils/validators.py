@@ -3,8 +3,8 @@ from typing import Dict, Tuple, Optional
 
 
 def validate_search_request(data: Dict) -> Tuple[bool, Optional[Dict]]:
-    """Validate search request data.
-
+    """
+    Validate search request data.
     Returns: (is_valid, error_dict)
     """
     errors: Dict[str, str] = {}
