@@ -22,7 +22,49 @@ adzuna_service = AdzunaService(
 @jobs_bp.route("/")
 def search():
     return render_template("search.html", page_name="Job Search")
-
+@jobs_bp.route("/results")
+def mock_results_page():
+    results = {
+    "success": True,
+    "count": 3,
+    "query_time_ms": 142,
+    "results": [
+        {
+            "title": "Software Engineer (Backend)",
+            "company": "OpenAI",
+            "location": "San Francisco, CA",
+            "salary_min": 130000,
+            "salary_max": 180000,
+            "description": "Work on high-performance backend systems that power our API platform and deploy cutting-edge models to production.",
+            "url": "https://www.openai.com/careers/backend-engineer",
+            "final_score": 96,
+            "posted_date": "2025-11-05"
+        },
+        {
+            "title": "Machine Learning Engineer",
+            "company": "Google DeepMind",
+            "location": "Mountain View, CA",
+            "salary_min": 150000,
+            "salary_max": 210000,
+            "description": "Develop and optimize state-of-the-art machine learning algorithms for multimodal AI applications.",
+            "url": "https://careers.google.com/jobs/ml-engineer-deepmind",
+            "final_score": 91,
+            "posted_date": "2025-11-03"
+        },
+        {
+            "title": "Full Stack Developer",
+            "company": "Blackhawk Network",
+            "location": "Coppell, TX",
+            "salary_min": 110000,
+            "salary_max": 140000,
+            "description": "Build and maintain scalable web applications integrating payment, gift card, and AI-powered recommendation systems.",
+            "url": "https://blackhawknetwork.com/careers/fullstack-developer",
+            "final_score": 88,
+            "posted_date": "2025-11-07"
+        }
+    ]
+}
+    return render_template("results.html", page_name="Job Results", **results)
 
 @jobs_bp.route("/results", methods=["POST"])
 def search_jobs():
@@ -70,3 +112,4 @@ def search_jobs():
     logger.info("search_ok", extra={"ctx": {"count": results["count"], "query_time_ms": query_time}})
 
     return render_template("results.html", page_name="Job Results", **results)
+4
