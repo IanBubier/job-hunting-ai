@@ -79,7 +79,7 @@ img{max-width:100%; display:block}
 .field{ display:grid; gap:6px; }
 .label{ font-weight:600; }
 
-/* Inputs & selects (shared look) */
+/* Inputs & selects */
 .input, .select{
   width:100%;
   padding:12px 14px;
