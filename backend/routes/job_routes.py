@@ -24,6 +24,7 @@ def search():
     """Render job search page."""
     return render_template("search.html", page_name="Job Search")
 
+
 @jobs_bp.route("/results", methods=["POST"])
 def search_jobs():
     """Handle job search requests, returning ranked job listings."""
