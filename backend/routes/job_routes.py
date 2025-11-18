@@ -61,17 +61,14 @@ def search_jobs():
         )
 
         if not jobs:
-            return (
-                jsonify(
-                    {
-                        "success": True,
-                        "count": 0,
-                        "results": [],
-                        "message": "No jobs found matching criteria",
-                    }
-                ),
-                200,
-            )
+            results = {
+                "success": True,
+                "count": 0,
+                "query_time_ms": int((time.time() - start_time) * 1000),
+                "results": [],
+            }
+
+            return render_template("results.html", page_name="Job Results", **results)
 
         # Rank jobs using ML
         matched_jobs = matching_service.rank_jobs(
@@ -93,7 +90,6 @@ def search_jobs():
             extra={"ctx": {"count": results["count"], "query_time_ms": query_time}},
         )
 
-        # Render results page directly
         return render_template("results.html", page_name="Job Results", **results)
 
     except Exception as e:
@@ -107,7 +103,10 @@ def search_jobs():
                     "success": False,
                     "error": {
                         "code": 500,
-                        "message": "An error occurred while searching for jobs. Please try again.",
+                        "message": (
+                            "An error occurred while searching for jobs. "
+                            "Please try again."
+                        ),
                     },
                 }
             ),

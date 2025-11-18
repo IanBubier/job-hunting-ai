@@ -9,5 +9,11 @@ def test_adzuna_service_init():
 
 def test_search_jobs_returns_list():
     svc = AdzunaService()
-    res = svc.search_jobs("dev", "remote")
+    res = svc.search_jobs("dev", "remote", "25")
     assert isinstance(res, list)
+
+
+def test_search_jobs_no_results():
+    svc = AdzunaService()
+    res = svc.search_jobs("asdkfjaskdfjaskdfj", "Nowhere", "1000", max_results=5)
+    assert res == []

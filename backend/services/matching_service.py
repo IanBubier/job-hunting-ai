@@ -19,7 +19,7 @@ class MatchingService:
         Args:
             skills: list of user skills
             keywords: job keywords user is interested in
-            experience: experience level ("entry", "mid", "senior")
+            experience: experience level in string format
         Returns:
             concatenated string
         """

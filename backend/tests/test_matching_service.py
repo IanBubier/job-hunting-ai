@@ -84,7 +84,7 @@ class TestCreateUserProfile:
         """
         skills = ["Python", "SQL", "Docker"]
         keywords = "Backend Developer"
-        experience = "mid"
+        experience = "4"
 
         profile = matching_service.create_user_profile(skills, keywords, experience)
 
@@ -100,7 +100,7 @@ class TestCreateUserProfile:
         """
         skills = []
         keywords = "Data Scientist"
-        experience = "entry"
+        experience = "1"
 
         profile = matching_service.create_user_profile(skills, keywords, experience)
 
@@ -115,17 +115,15 @@ class TestCreateUserProfile:
         keywords = "Developer"
 
         # Test entry level
-        profile_entry = matching_service.create_user_profile(skills, keywords, "entry")
+        profile_entry = matching_service.create_user_profile(skills, keywords, "1")
         assert "entry" in profile_entry.lower() or "0-2" in profile_entry
 
         # Test mid level
-        profile_mid = matching_service.create_user_profile(skills, keywords, "mid")
+        profile_mid = matching_service.create_user_profile(skills, keywords, "4")
         assert "mid" in profile_mid.lower() or "3-5" in profile_mid
 
         # Test senior level
-        profile_senior = matching_service.create_user_profile(
-            skills, keywords, "senior"
-        )
+        profile_senior = matching_service.create_user_profile(skills, keywords, "10")
         assert "senior" in profile_senior.lower() or "5+" in profile_senior
 
 
@@ -310,7 +308,7 @@ class TestRankJobs:
         user_data = {
             "skills": ["Python", "Machine Learning"],
             "keywords": "Data Scientist",
-            "experience": "entry",
+            "experience": "1",
         }
 
         ranked = matching_service.rank_jobs(user_data, sample_jobs[:2], top_k=2)
@@ -335,7 +333,7 @@ class TestRankJobs:
         user_data = {
             "skills": ["Python", "Machine Learning", "Data Analysis"],
             "keywords": "Data Scientist",
-            "experience": "entry",
+            "experience": "1",
         }
 
         jobs = [
@@ -386,7 +384,7 @@ class TestRankJobs:
         """
         Test that top_k parameter limits results
         """
-        user_data = {"skills": ["Python"], "keywords": "Developer", "experience": "mid"}
+        user_data = {"skills": ["Python"], "keywords": "Developer", "experience": "3"}
 
         jobs = [
             Job(
@@ -419,7 +417,7 @@ class TestRankJobs:
         user_data = {
             "skills": ["Python", "Docker", "AWS"],
             "keywords": "Backend Developer",
-            "experience": "mid",
+            "experience": "4",
         }
 
         jobs = [
@@ -451,7 +449,7 @@ class TestRankJobs:
         user_data = {
             "skills": ["Python"],
             "keywords": "Developer",
-            "experience": "entry",
+            "experience": "1",
         }
 
         ranked = matching_service.rank_jobs(user_data, [], top_k=10)
@@ -466,7 +464,7 @@ class TestRankJobs:
         user_data = {
             "skills": ["Python"],
             "keywords": "Developer",
-            "experience": "entry",
+            "experience": "1",
         }
 
         jobs = [
@@ -649,7 +647,7 @@ class TestIntegration:
         user_data = {
             "skills": ["Python", "Machine Learning", "Pandas", "SQL"],
             "keywords": "Data Scientist Machine Learning",
-            "experience": "entry",
+            "experience": "1",
         }
 
         jobs = [

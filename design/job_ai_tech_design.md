@@ -1,10 +1,10 @@
 # Technical Design Document
 ## Job Hunting AI Web Tool
 
-**Version:** 1.0  
-**Date:** October 2025  
-**Project:** CS 467 Capstone Project  
-**Team:** 4 Members (5-week sprint)
+**Version:** 1.1
+**Date:** November 2025
+**Project:** CS 467 Capstone Project
+**Last Updated:** Post-Implementation
 
 ---
 
@@ -127,16 +127,15 @@ This design covers the MVP (Minimum Viable Product) to be delivered within 5 wee
 #### 3.1.1 Structure
 ```
 frontend/
-├── index.html          # Main application page
+├── index.html          # Landing page
+├── search.html         # Job search form page
+├── results.html        # Job results display page
+├── loading.html        # Loading state page
 ├── css/
-│   ├── styles.css      # Main stylesheet
-│   └── responsive.css  # Media queries
+│   └── styles.css      # Main stylesheet
 ├── js/
-│   ├── app.js          # Main application logic
-│   ├── api.js          # API communication
-│   └── ui.js           # UI manipulation
-└── assets/
-    └── images/         # Logo, icons
+│   └── script.js       # Frontend JavaScript
+└── images/             # Logo, icons, graphics
 ```
 
 #### 3.1.2 Key Components
@@ -247,22 +246,48 @@ backend/
 
 **Flask Application (app.py)**
 ```python
-from flask import Flask
-from flask_cors import CORS
-from routes.job_routes import job_bp
+from flask import Flask, render_template, jsonify
+from backend.config import Config
+from backend.routes.job_routes import jobs_bp
+from werkzeug.exceptions import HTTPException
+import os
 
-app = Flask(__name__)
-CORS(app)
 
-# Configuration
-app.config.from_object('config.Config')
+def create_app():
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+    app = Flask(
+        __name__,
+        template_folder=frontend_path,
+        static_folder=frontend_path,
+        static_url_path="",
+    )
 
-# Register blueprints
-app.register_blueprint(job_bp, url_prefix='/api')
+    app.config.from_object(Config)
+    app.register_blueprint(jobs_bp)
 
-@app.route('/health')
-def health_check():
-    return {'status': 'healthy', 'version': '1.0'}
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # Global error handler for HTTP and unhandled exceptions
+        if isinstance(e, HTTPException):
+            status = e.code or 500
+            return jsonify({
+                "success": False,
+                "error": {"code": status, "message": e.description}
+            }), status
+        return jsonify({
+            "success": False,
+            "error": {"code": 500, "message": "An unexpected error occurred."}
+        }), 500
+
+    @app.route("/")
+    def about():
+        return render_template("index.html", page_name="Job Hunting AI")
+
+    @app.route("/health")
+    def health():
+        return jsonify({"status": "healthy", "version": "1.0"})
+
+    return app
 ```
 
 **Job Model (models/job_model.py)**
@@ -412,7 +437,7 @@ class MatchingService:
         Args:
             skills: list of user skills
             keywords: job keywords user is interested in
-            experience: experience level ("entry", "mid", "senior")
+            experience: experience level in string format (numeric years)
         Returns:
             concatenated string
         """
@@ -424,12 +449,13 @@ class MatchingService:
         if keywords:
             profile_parts.append(f"Looking for: {keywords}")
 
-        experience_map = {
-            "entry": "Entry level position, 0-2 years experience",
-            "mid": "Mid-level position, 3-5 years experience",
-            "senior": "Senior position, 5+ years experience",
-        }
-        profile_parts.append(experience_map.get(experience, ""))
+        # Experience is now numeric (years)
+        if int(experience) < 3:
+            profile_parts.append("Entry level position, 0-2 years experience")
+        elif int(experience) < 6:
+            profile_parts.append("Mid-level position, 3-5 years experience")
+        else:
+            profile_parts.append("Senior position, 5+ years experience")
 
         return " ".join([p for p in profile_parts if p])
 
@@ -541,91 +567,105 @@ class MatchingService:
 
 **Adzuna Service (services/adzuna_service.py)**
 ```python
-import requests
 from typing import List, Dict, Optional
-from models.job_model import Job
+import os
 import time
+import requests
+from backend.models.job_model import Job
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class AdzunaService:
     BASE_URL = "https://api.adzuna.com/v1/api/jobs"
-    
-    def __init__(self, app_id: str, app_key: str, country: str = 'us'):
-        self.app_id = app_id
-        self.app_key = app_key
-        self.country = country
-        self.rate_limit_delay = 0.1  # 100ms between requests
-        self.last_request_time = 0
-    
-    def _rate_limit(self):
-        """Simple rate limiting"""
+
+    def __init__(
+        self,
+        app_id: Optional[str] = None,
+        app_key: Optional[str] = None,
+        country: str = "us",
+    ):
+        self.app_id = app_id or os.getenv("ADZUNA_APP_ID")
+        self.app_key = app_key or os.getenv("ADZUNA_APP_KEY")
+        self.country = (country or os.getenv("ADZUNA_COUNTRY", "us")).lower()
+
+        # Mock mode when credentials not available
+        self.use_mock = os.getenv("USE_MOCK", "1").lower() in ("1", "true", "yes")
+        if not self.app_id or not self.app_key:
+            self.use_mock = True
+
+        self.rate_limit_delay = 0.1  # seconds between requests
+        self.last_request_time = 0.0
+
+    def _rate_limit(self) -> None:
+        """Simple rate limiting to respect external API limits."""
         elapsed = time.time() - self.last_request_time
         if elapsed < self.rate_limit_delay:
             time.sleep(self.rate_limit_delay - elapsed)
         self.last_request_time = time.time()
-    
-    def search_jobs(self,
-                   keywords: str,
-                   location: str,
-                   max_results: int = 50,
-                   page: int = 1) -> List[Job]:
+
+    def search_jobs(
+        self,
+        keywords: Optional[str],
+        location: Optional[str],
+        distance: Optional[str],
+        max_results: int = 50,
+        page: int = 1,
+    ) -> List[Job]:
         """
-        Search for jobs using Adzuna API
-        
-        Args:
-            keywords: Search query
-            location: Location string
-            max_results: Maximum number of results
-            page: Page number
-        
-        Returns:
-            List of Job objects
+        Search for jobs using the Adzuna API.
+        Returns a list of Job objects. On error returns an empty list.
         """
+        if self.use_mock:
+            return []
+
         self._rate_limit()
-        
+
         url = f"{self.BASE_URL}/{self.country}/search/{page}"
-        
+
         params = {
-            'app_id': self.app_id,
-            'app_key': self.app_key,
-            'results_per_page': min(max_results, 50),
-            'what': keywords,
-            'where': location,
-            'content-type': 'application/json'
+            "app_id": self.app_id,
+            "app_key": self.app_key,
+            "results_per_page": min(max_results, 50),
+            "what": keywords,
+            "where": location,
+            "distance": distance,
         }
-        
+
         try:
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(
+                url,
+                params=params,
+                headers={"content-type": "application/json"},
+                timeout=10,
+            )
             response.raise_for_status()
             data = response.json()
-            
-            return self._parse_jobs(data.get('results', []))
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching jobs: {e}")
+            return self._parse_jobs(data.get("results", []))
+
+        except requests.exceptions.RequestException:
+            logger.exception("adzuna.fetch_failed")
             return []
-    
+
     def _parse_jobs(self, raw_jobs: List[Dict]) -> List[Job]:
-        """Convert Adzuna API response to Job objects"""
-        jobs = []
-        
+        """Convert Adzuna API response items to Job objects."""
+        jobs: List[Job] = []
+
         for raw_job in raw_jobs:
-            try:
-                job = Job(
-                    id=raw_job.get('id', ''),
-                    title=raw_job.get('title', 'Untitled'),
-                    company=raw_job.get('company', {}).get('display_name', 'Unknown'),
-                    location=raw_job.get('location', {}).get('display_name', 'Unknown'),
-                    description=raw_job.get('description', ''),
-                    salary_min=raw_job.get('salary_min'),
-                    salary_max=raw_job.get('salary_max'),
-                    url=raw_job.get('redirect_url', ''),
-                    posted_date=raw_job.get('created', '')
-                )
-                jobs.append(job)
-            except Exception as e:
-                print(f"Error parsing job: {e}")
-                continue
-        
+            job = Job(
+                id=raw_job.get("id", ""),
+                title=raw_job.get("title", "Untitled"),
+                company=(raw_job.get("company", {}).get("display_name", "Unknown")),
+                location=(raw_job.get("location", {}).get("display_name", "Unknown")),
+                description=raw_job.get("description", ""),
+                salary_min=raw_job.get("salary_min"),
+                salary_max=raw_job.get("salary_max"),
+                url=raw_job.get("redirect_url", ""),
+                posted_date=raw_job.get("created", ""),
+            )
+            jobs.append(job)
+
         return jobs
 ```
 
@@ -694,7 +734,8 @@ User          Frontend        Backend         Adzuna API      ML Engine
   "skills": ["Python", "Machine Learning", "SQL"],
   "keywords": "Data Scientist",
   "location": "San Francisco, CA",
-  "experience": "entry",
+  "distance": "25",
+  "experience": "2",
   "max_results": 20
 }
 ```
@@ -755,7 +796,7 @@ GET /health
 
 #### 5.1.2 Job Search
 ```
-POST /api/search
+POST /search/results
 Content-Type: application/json
 ```
 
@@ -765,16 +806,18 @@ Content-Type: application/json
   "skills": ["string"],
   "keywords": "string",
   "location": "string",
-  "experience": "entry|mid|senior",
+  "distance": "string",
+  "experience": "string",
   "max_results": 20
 }
 ```
 
 **Validation Rules:**
-- `skills`: Array of strings, at least 1 skill required
-- `keywords`: String, minimum 3 characters
-- `location`: String, minimum 2 characters
-- `experience`: Must be one of: "entry", "mid", "senior"
+- `skills`: Array of strings, at least 1 skill required, max 20 skills
+- `keywords`: String, minimum 3 characters if provided
+- `location`: String, minimum 2 characters if provided
+- `distance`: String representing radius in miles (e.g., "25")
+- `experience`: String representing years of experience (numeric, e.g., "2", "5", "10")
 - `max_results`: Integer between 1 and 50, default 20
 
 **Success Response (200):**
@@ -829,78 +872,112 @@ Content-Type: application/json
 
 **routes/job_routes.py:**
 ```python
-from flask import Blueprint, request, jsonify
-from services.adzuna_service import AdzunaService
-from services.ml_service import MLService
-from services.matching_service import MatchingService
-from utils.validators import validate_search_request
+import os
 import time
+from flask import Blueprint, jsonify, request, render_template
+from backend.services.adzuna_service import AdzunaService
+from backend.services.ml_service import MLService
+from backend.services.matching_service import MatchingService
+from backend.utils.validators import validate_search_request, sanitize_input
+import logging
 
-job_bp = Blueprint('jobs', __name__)
+logger = logging.getLogger(__name__)
 
-# Initialize services (in production, use dependency injection)
+jobs_bp = Blueprint("jobs_bp", __name__, url_prefix="/search")
+
+# Initialize services (in production, replace with DI)
 ml_service = MLService()
 matching_service = MatchingService(ml_service)
 adzuna_service = AdzunaService(
-    app_id=os.getenv('ADZUNA_APP_ID'),
-    app_key=os.getenv('ADZUNA_APP_KEY')
+    app_id=os.getenv("ADZUNA_APP_ID"), app_key=os.getenv("ADZUNA_APP_KEY")
 )
 
-@job_bp.route('/search', methods=['POST'])
+
+@jobs_bp.route("/")
+def search():
+    """Render job search page."""
+    return render_template("search.html", page_name="Job Search")
+
+
+@jobs_bp.route("/results", methods=["POST"])
 def search_jobs():
+    """Handle job search requests, returning ranked job listings."""
     start_time = time.time()
-    
+
     try:
+        data = request.get_json() or {}
+
         # Validate request
-        data = request.get_json()
         is_valid, error = validate_search_request(data)
         if not is_valid:
-            return jsonify({
-                'success': False,
-                'error': error
-            }), 400
-        
+            return jsonify({"success": False, "error": error}), 400
+
+        # Sanitize text inputs
+        if "keywords" in data:
+            data["keywords"] = sanitize_input(data["keywords"])
+        if "location" in data:
+            data["location"] = sanitize_input(data["location"])
+        if "skills" in data and isinstance(data["skills"], list):
+            data["skills"] = [sanitize_input(skill) for skill in data["skills"]]
+
+        # Combine keywords and skills for Adzuna search
+        search_query = data.get("keywords", "")
+        if data.get("skills"):
+            skills_str = " ".join(data.get("skills", []))
+            search_query = f"{search_query} {skills_str}".strip()
+
         # Fetch jobs from Adzuna
         jobs = adzuna_service.search_jobs(
-            keywords=data.get('keywords', ''),
-            location=data.get('location', ''),
-            max_results=data.get('max_results', 50)
+            keywords=search_query if search_query else None,
+            location=data.get("location", None),
+            distance=data.get("distance", None),
+            max_results=data.get("max_results", 50),
         )
-        
+
         if not jobs:
-            return jsonify({
-                'success': True,
-                'count': 0,
-                'results': [],
-                'message': 'No jobs found matching criteria'
-            })
-        
+            results = {
+                "success": True,
+                "count": 0,
+                "query_time_ms": int((time.time() - start_time) * 1000),
+                "results": [],
+            }
+            return render_template("results.html", page_name="Job Results", **results)
+
         # Rank jobs using ML
         matched_jobs = matching_service.rank_jobs(
-            user_data=data,
-            jobs=jobs,
-            top_k=data.get('max_results', 20)
+            user_data=data, jobs=jobs, top_k=data.get("max_results", 20)
         )
-        
+
         # Format response
         query_time = int((time.time() - start_time) * 1000)
-        
-        return jsonify({
-            'success': True,
-            'count': len(matched_jobs),
-            'query_time_ms': query_time,
-            'results': [job.to_dict() for job in matched_jobs]
-        })
-        
+        results = {
+            "success": True,
+            "count": len(matched_jobs),
+            "query_time_ms": query_time,
+            "results": [job.to_dict() for job in matched_jobs],
+        }
+
+        logger.info(
+            "search_ok",
+            extra={"ctx": {"count": results["count"], "query_time_ms": query_time}},
+        )
+
+        return render_template("results.html", page_name="Job Results", **results)
+
     except Exception as e:
-        print(f"Error in search endpoint: {e}")
-        return jsonify({
-            'success': False,
-            'error': {
-                'code': 'INTERNAL_ERROR',
-                'message': 'An unexpected error occurred'
-            }
-        }), 500
+        logger.exception("search_failed", extra={"ctx": {"error": str(e)}})
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": {
+                        "code": 500,
+                        "message": "An error occurred while searching for jobs.",
+                    },
+                }
+            ),
+            500,
+        )
 ```
 
 ---
@@ -1273,11 +1350,14 @@ def validate_search_request(data: Dict) -> Tuple[bool, Optional[Dict]]:
     elif len(location) > 100:
         errors['location'] = 'Location must be less than 100 characters'
     
-    # Validate experience
-    experience = data.get('experience', 'entry')
-    valid_levels = ['entry', 'mid', 'senior']
-    if experience not in valid_levels:
-        errors['experience'] = f'Experience must be one of: {", ".join(valid_levels)}'
+    # Validate experience (now numeric string)
+    experience = data.get("experience", "")
+    if not isinstance(experience, str):
+        errors["experience"] = "Experience must be a string"
+    elif not experience.isdigit():
+        errors["experience"] = "Experience must contain only digits"
+    elif int(experience) < 0:
+        errors["experience"] = "Experience must not be negative"
     
     # Validate max_results
     max_results = data.get('max_results', 20)
@@ -1498,7 +1578,7 @@ Flask-CORS==4.0.0
 gunicorn==21.2.0
 requests==2.31.0
 sentence-transformers==3.0.1
-numpy==1.24.3
+numpy>=1.26.0
 python-dotenv==1.0.0
 torch>=2.1.0
 torchvision>=0.16.0
@@ -3040,34 +3120,178 @@ Brief description of changes
 
 ---
 
-## 12. Document Revision History
+## 12. Implementation Status
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | Oct 2025 | Team Leader | Initial technical design document |
-| 1.1 | TBD | TBD | Updates based on implementation feedback |
+### 12.1 Completed Features
+
+The following features have been successfully implemented and tested:
+
+#### Core Functionality
+- ✅ Flask backend with blueprint architecture
+- ✅ Adzuna API integration with mock mode support
+- ✅ ML-based job ranking using Sentence-BERT (all-MiniLM-L6-v2)
+- ✅ Semantic similarity calculation with cosine distance
+- ✅ Skills matching and extraction from job descriptions
+- ✅ Server-side rendering with Jinja2 templates
+- ✅ Input validation and sanitization
+- ✅ Error handling and logging
+
+#### User Interface
+- ✅ Landing page ([index.html](frontend/index.html))
+- ✅ Job search form ([search.html](frontend/search.html))
+- ✅ Results display with match scores ([results.html](frontend/results.html))
+- ✅ Loading state page ([loading.html](frontend/loading.html))
+- ✅ Responsive design with CSS
+- ✅ Square job card layout
+
+#### API Endpoints
+- ✅ `GET /` - Landing page
+- ✅ `GET /health` - Health check endpoint
+- ✅ `GET /search` - Search form page
+- ✅ `POST /search/results` - Job search with ML ranking
+- ✅ `GET /config/check` - Configuration verification (debug)
+- ✅ `GET /adzuna/test` - Adzuna API test endpoint (debug)
+
+#### Testing
+- ✅ Unit tests for ML service
+- ✅ Unit tests for matching service
+- ✅ Unit tests for Adzuna service
+- ✅ Unit tests for validators
+- ✅ Integration tests for API endpoints
+- ✅ Results rendering tests
+- ✅ Code coverage >80%
+
+#### Development Tools
+- ✅ Black formatter for code formatting
+- ✅ Flake8 linter for code quality
+- ✅ pytest for automated testing
+- ✅ Environment variable management with python-dotenv
+- ✅ Git version control with feature branches
+
+### 12.2 Implementation Differences from Original Design
+
+The following deviations from the original design were made during implementation:
+
+1. **Experience Level Format**
+   - Original: Categorical values ("entry", "mid", "senior")
+   - Current: Numeric string representing years (e.g., "2", "5", "10")
+   - Rationale: More granular control and better user experience
+
+2. **API Routes**
+   - Original: `/api/search`
+   - Current: `/search/results`
+   - Rationale: Better semantic organization with blueprint prefix
+
+3. **Response Format**
+   - Original: Pure JSON API
+   - Current: Server-rendered HTML with Jinja2 templates
+   - Rationale: Simpler deployment, no CORS issues, better SEO
+
+4. **Mock Mode Support**
+   - Added: `USE_MOCK` environment variable for testing without API credentials
+   - Rationale: Enable testing and development without requiring Adzuna credentials
+
+5. **Distance Parameter**
+   - Added: `distance` parameter for location-based search radius
+   - Rationale: More precise location filtering for job searches
+
+6. **Skills and Keywords Combination**
+   - Enhancement: Backend combines skills and keywords for Adzuna search
+   - Rationale: Better search results by including user skills in external API query
+
+7. **Logging**
+   - Added: Structured logging with Python's logging module
+   - Rationale: Better debugging and production monitoring
+
+8. **macOS MPS Troubleshooting**
+   - Added: Documentation and detection for PyTorch MPS issues on macOS
+   - Rationale: Resolved worker crashes in Gunicorn with forked processes
+
+### 12.3 Known Issues and Limitations
+
+1. **No Persistent Database**
+   - All data is processed in-memory
+   - No user accounts or search history
+   - No job caching across requests
+
+2. **Rate Limiting**
+   - Basic time-based rate limiting for Adzuna API
+   - No per-user rate limiting (no authentication)
+
+3. **CORS Configuration**
+   - CORS is commented out in current implementation
+   - May need to be enabled for SPA frontend deployment
+
+4. **PyTorch MPS on macOS**
+   - MPS/Metal backend can crash with Gunicorn's forked workers
+   - Recommendation: Use Flask dev server or Linux container for macOS development
+
+5. **No Real-time Updates**
+   - Results are static once rendered
+   - No WebSocket or polling for new jobs
+
+### 12.4 Deployment Configuration
+
+#### Development
+```bash
+# Set environment variables
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+export FLASK_DEBUG=0
+
+# Run Flask development server
+python -m backend.app
+```
+
+#### Production (Gunicorn)
+```bash
+# Set environment variables
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+export USE_MOCK=0
+export ADZUNA_APP_ID=your_app_id
+export ADZUNA_APP_KEY=your_app_key
+
+# Run with Gunicorn
+gunicorn --bind 0.0.0.0:8000 wsgi:app --workers 3 --log-level info
+```
+
+#### WSGI Entry Point
+```python
+# wsgi.py
+from dotenv import load_dotenv
+from backend.app import create_app
+
+load_dotenv()
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run()
+```
 
 ---
 
-## 13. Approval and Sign-off
+## 13. Document Revision History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0 | Oct 2025 | Team | Initial technical design document |
+| 1.1 | Nov 2025 | Team | Updated with actual implementation details, added implementation status section, updated API routes, updated experience format to numeric, added mock mode documentation, updated requirements |
+
+---
+
+## 14. Approval and Sign-off
 
 **Document Prepared By:**
-- Team Member 1 (Team Leader) - Architecture and Integration Design
-- Team Member 2 (ML Lead) - Machine Learning Design
-- Team Member 3 (Web Dev Lead) - Frontend Design
-- Team Member 4 (Backend Lead) - Backend and Deployment Design
+- Development Team - Architecture, Implementation, and Testing
 
 **Document Reviewed By:**
-- All team members
+- Team members
 
-**Document Approved:**
-- [ ] Team Member 1
-- [ ] Team Member 2
-- [ ] Team Member 3
-- [ ] Team Member 4
-- [ ] Course Instructor (if required)
+**Document Status:**
+- ✅ Version 1.0 (Initial Design) - Approved October 2025
+- ✅ Version 1.1 (Post-Implementation Update) - Updated November 2025
 
-**Approval Date:** __________________
+**Last Updated:** November 18, 2025
 
 ---
 

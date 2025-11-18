@@ -107,12 +107,38 @@ It is recommended that you use a Python virtual environment for this (and all) P
 
 - The included `.env.example` file must be updated with appropriate values, and renamed to `.env`
 
-# Set PYTHONPATH and Start the Server<a name="start"></a>
-- `export PYTHONPATH="${PYTHONPATH}:$(pwd)"`
-Run the following command to start the server:
-- `gunicorn --bind 0.0.0.0:portnum wsgi:app -D`
+## Set PYTHONPATH and Start the Server<a name="start"></a>
+Run the server (development vs production)
 
-Where portnum is an unused port on the host machine.
+- Development (local, no forking):
+
+  - Ensure the repo root is on `PYTHONPATH`:
+
+    ```bash
+    export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+    ```
+
+  - Start the Flask app in the foreground (recommended for debugging):
+
+    ```bash
+    FLASK_DEBUG=0 python -m backend.app
+    ```
+
+- Production (Gunicorn):
+
+  - Start with a WSGI entrypoint (`wsgi.py`) and Gunicorn:
+
+    ```bash
+    export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+    gunicorn --bind 0.0.0.0:8000 wsgi:app --workers 3 --log-level info
+    ```
+
+  - Replace `8000` with your desired port. Avoid `--preload` unless you understand master-process model loading.
+
+Notes and troubleshooting
+
+- macOS users: PyTorch's MPS/Metal backend can be unstable when used inside forked worker processes (Gunicorn). For local development prefer the Flask foreground server above or run inside a Linux container. If you see worker crashes or `ERR_EMPTY_RESPONSE` in the browser, try `FLASK_DEBUG=0 python -m backend.app` or run the service in Docker/Linux.
+- If you need cross-origin requests during development, enable CORS in `backend/app.py` (use `flask-cors`) and restrict origins for production.
 
 ## Formatting and Linting<a name="formatting"></a>
 
