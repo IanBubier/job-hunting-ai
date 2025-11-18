@@ -79,6 +79,14 @@ gcloud run services update $SERVICE_NAME \
     --region=$REGION \
     --update-env-vars ADZUNA_APP_ID=$ADZUNA_APP_ID,ADZUNA_APP_KEY=$ADZUNA_APP_KEY,SECRET_KEY=$SECRET_KEY,USE_MOCK=0
 
+# Allow public access
+echo ""
+echo "Setting public access policy..."
+gcloud run services add-iam-policy-binding $SERVICE_NAME \
+    --region=$REGION \
+    --member=allUsers \
+    --role=roles/run.invoker
+
 echo ""
 echo "================================================"
 echo "Deployment Complete!"
