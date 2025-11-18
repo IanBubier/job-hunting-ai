@@ -116,7 +116,7 @@ This design covers the MVP (Minimum Viable Product) to be delivered within 5 wee
 | ML Library | sentence-transformers | 2.2+ | Semantic similarity |
 | ML Model | all-MiniLM-L6-v2 | - | Lightweight SBERT model |
 | HTTP Client | requests | 2.31+ | External API calls |
-| Deployment | Render | - | Cloud hosting |
+| Deployment | Google Cloud Run | - | Cloud hosting |
 
 ---
 
@@ -1475,40 +1475,44 @@ def add_security_headers(response):
 
 ## 9. Deployment Architecture
 
-### 9.1 Deployment Platform: Render
+### 9.1 Deployment Platform: Google Cloud Run
 
-**Why Render:**
-- Free tier available for student projects
-- Simple Git-based deployment
-- Supports Python/Flask applications
-- Automatic HTTPS
-- Easy environment variable management
-- Good documentation
+**Why Google Cloud Run:**
+- Serverless container platform with auto-scaling
+- Pay-per-use pricing (generous free tier)
+- Supports any containerized application (Docker)
+- Automatic HTTPS and custom domains
+- Integrates with Google Cloud Build for CI/CD
+- Production-grade infrastructure
+- Easy secret management with Secret Manager
+- Comprehensive logging and monitoring
 
 **Alternative Options:**
-- Heroku (similar but more expensive)
-- AWS EC2 (more complex setup)
-- Google Cloud Run (good option but requires GCP knowledge)
-- Railway (similar to Render)
+- Render (simpler but less flexible)
+- Heroku (more expensive)
+- AWS ECS/Fargate (more complex setup)
+- Railway (similar simplicity to Render)
 
 ### 9.2 Deployment Structure
 
 ```
 ┌─────────────────────────────────────────┐
-│           Render Platform               │
+│      Google Cloud Run Platform          │
 │                                         │
 │  ┌────────────────────────────────────┐ │
-│  │     Web Service (Flask App)        │ │
-│  │  - Auto-scaling                    │ │
+│  │   Containerized Flask Application  │ │
+│  │  - Docker container                │ │
+│  │  - Auto-scaling (0 to N instances) │ │
 │  │  - HTTPS enabled                   │ │
 │  │  - Environment variables           │ │
 │  │  - Health checks                   │ │
+│  │  - Built via Cloud Build           │ │
 │  └────────────────────────────────────┘ │
 │                                         │
 │  ┌────────────────────────────────────┐ │
-│  │   Static File Serving (Frontend)   │ │
-│  │  - HTML/CSS/JS                     │ │
-│  │  - CDN delivery                    │ │
+│  │   Container Registry (GCR)         │ │
+│  │  - Stores Docker images            │ │
+│  │  - Version tagging                 │ │
 │  └────────────────────────────────────┘ │
 └─────────────────────────────────────────┘
               │
@@ -1528,7 +1532,6 @@ job-hunting-ai/
 │   ├── config.py
 │   ├── download_model.py
 │   ├── requirements.txt       # Python dependencies
-│   ├── runtime.txt           # Python version
 │   ├── routes/
 │   ├── services/
 │   ├── models/
@@ -1538,37 +1541,97 @@ job-hunting-ai/
 │   ├── css/
 │   ├── js/
 │   └── assets/
-├── render.yaml               # Render configuration
+├── Dockerfile                # Container configuration
+├── cloudbuild.yaml           # Cloud Build configuration
+├── .gcloudignore            # Files to ignore in builds
+├── deploy-cloudrun.sh        # Deployment script
 ├── README.md
 ├── .gitignore
-└── docs/
-    └── deployment.md
+└── CLOUD_RUN_DEPLOYMENT.md
 ```
 
-### 9.4 Render Configuration
+### 9.4 Google Cloud Run Configuration
 
-**render.yaml:**
+**Dockerfile:**
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Download the ML model
+COPY backend/download_model.py .
+RUN python download_model.py
+
+# Copy application code
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+
+# Set environment variables
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--chdir", "backend", "--timeout", "120", "app:app"]
+```
+
+**cloudbuild.yaml:**
 ```yaml
-services:
-  - type: web
-    name: job-hunting-ai-backend
-    env: python
-    region: oregon
-    plan: free
-    buildCommand: pip install -r backend/requirements.txt && python backend/download_model.py
-    startCommand: cd backend && gunicorn app:app
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.9.18
-      - key: ADZUNA_APP_ID
-        sync: false
-      - key: ADZUNA_APP_KEY
-        sync: false
-      - key: SECRET_KEY
-        generateValue: true
-      - key: FLASK_ENV
-        value: production
-    healthCheckPath: /health
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest'
+      - '.'
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'job-hunting-ai-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID'
+      - '--region'
+      - 'us-west1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--timeout'
+      - '300'
+
+images:
+  - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest'
 ```
 
 **requirements.txt:**
@@ -1587,11 +1650,6 @@ flake8==7.1.0
 pytest==7.4.0
 ```
 
-**runtime.txt:**
-```
-python-3.9.18
-```
-
 ### 9.5 Deployment Steps
 
 **1. Prepare Repository:**
@@ -1606,38 +1664,95 @@ git remote add origin https://github.com/username/job-hunting-ai.git
 git push -u origin main
 ```
 
-**2. Configure Render:**
-1. Sign up at render.com
-2. Click "New +" → "Web Service"
-3. Connect GitHub repository
-4. Configure settings:
-   - Name: job-hunting-ai
-   - Environment: Python
-   - Build Command: `pip install -r backend/requirements.txt`
-   - Start Command: `cd backend && gunicorn app:app`
-   - Plan: Free
+**2. Set up Google Cloud Project:**
+```bash
+# Create a new project (or use an existing one)
+gcloud projects create YOUR-PROJECT-ID --name="Job Hunting AI"
+
+# Set the project
+gcloud config set project YOUR-PROJECT-ID
+
+# Enable required APIs
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable run.googleapis.com
+gcloud services enable containerregistry.googleapis.com
+```
 
 **3. Set Environment Variables:**
-In Render dashboard:
-- ADZUNA_APP_ID = [your_app_id]
-- ADZUNA_APP_KEY = [your_app_key]
-- SECRET_KEY = [auto-generated]
+```bash
+# Set environment variables for Cloud Run service
+gcloud run services update job-hunting-ai-backend \
+  --region us-west1 \
+  --update-env-vars ADZUNA_APP_ID=your_app_id,ADZUNA_APP_KEY=your_app_key,SECRET_KEY=your_secret_key,FLASK_ENV=production
+```
 
-**4. Deploy:**
-- Render automatically deploys on git push
-- Monitor build logs for errors
-- Access via provided render.com URL
+For production, use Secret Manager:
+```bash
+# Create secrets
+echo -n "your_app_id" | gcloud secrets create adzuna-app-id --data-file=-
+echo -n "your_app_key" | gcloud secrets create adzuna-app-key --data-file=-
 
-**5. Configure Custom Domain (Optional):**
-- Add custom domain in Render settings
-- Update DNS records
-- SSL automatically provisioned
+# Grant Cloud Run access to secrets
+gcloud secrets add-iam-policy-binding adzuna-app-id \
+  --member=serviceAccount:YOUR-PROJECT-NUMBER-compute@developer.gserviceaccount.com \
+  --role=roles/secretmanager.secretAccessor
+```
+
+**4. Deploy using Automated Script:**
+```bash
+# Run the deployment script
+./deploy-cloudrun.sh
+```
+
+The script will:
+- Prompt for project ID and environment variables
+- Submit build to Cloud Build using `cloudbuild.yaml`
+- Build Docker container
+- Push to Container Registry
+- Deploy to Cloud Run
+
+**5. Manual Deployment (Alternative):**
+```bash
+# Submit build manually
+gcloud builds submit --config cloudbuild.yaml
+
+# Or build and deploy in one step
+gcloud run deploy job-hunting-ai-backend \
+  --source . \
+  --region us-west1 \
+  --platform managed \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 2Gi \
+  --cpu 2 \
+  --timeout 300
+```
+
+**6. Verify Deployment:**
+```bash
+# Get the service URL
+gcloud run services describe job-hunting-ai-backend \
+  --region us-west1 \
+  --format 'value(status.url)'
+
+# Test the health endpoint
+curl https://YOUR-SERVICE-URL/health
+```
+
+**7. Configure Custom Domain (Optional):**
+```bash
+# Map custom domain
+gcloud run domain-mappings create \
+  --service job-hunting-ai-backend \
+  --domain your-domain.com \
+  --region us-west1
+```
 
 ### 9.6 CI/CD Pipeline
 
-**GitHub Actions Workflow (.github/workflows/deploy.yml):**
+**Option 1: Using GitHub Actions (.github/workflows/deploy.yml):**
 ```yaml
-name: Deploy to Render
+name: Deploy to Google Cloud Run
 
 on:
   push:
@@ -1651,7 +1766,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt
@@ -1665,10 +1780,27 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render Deploy
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Submit build to Cloud Build
         run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          gcloud builds submit --config cloudbuild.yaml
 ```
+
+**Option 2: Using Cloud Build Triggers (Recommended):**
+- Set up a Cloud Build trigger in Google Cloud Console
+- Connect to your GitHub repository
+- Configure trigger on push to `main` branch
+- Uses `cloudbuild.yaml` automatically
+- No GitHub Actions needed
 
 ### 9.7 Monitoring and Logging
 
@@ -1698,26 +1830,48 @@ def health_check():
         }, 503
 ```
 
-**Basic Logging:**
+**Logging with Google Cloud Logging:**
 ```python
 import logging
-from logging.handlers import RotatingFileHandler
+import google.cloud.logging
 
-# Configure logging
-if not app.debug:
-    file_handler = RotatingFileHandler(
-        'logs/app.log',
-        maxBytes=10240,
-        backupCount=10
+# Configure logging for Cloud Run
+if os.getenv('FLASK_ENV') == 'production':
+    # Use Google Cloud Logging
+    client = google.cloud.logging.Client()
+    client.setup_logging()
+else:
+    # Local development logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     )
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-    ))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    app.logger.setLevel(logging.INFO)
-    app.logger.info('Job Hunting AI startup')
+
+app.logger.info('Job Hunting AI startup')
 ```
+
+**View Logs:**
+```bash
+# View recent logs
+gcloud run services logs read job-hunting-ai-backend \
+  --region us-west1 \
+  --limit 50
+
+# Tail logs in real-time
+gcloud run services logs tail job-hunting-ai-backend \
+  --region us-west1
+
+# Filter by severity
+gcloud run services logs read job-hunting-ai-backend \
+  --region us-west1 \
+  --log-filter 'severity>=ERROR'
+```
+
+**Monitoring:**
+- Use Google Cloud Monitoring for metrics
+- Set up uptime checks for health endpoint
+- Configure alerting policies for errors or downtime
+- Monitor request latency and error rates
 
 ---
 
@@ -2730,13 +2884,16 @@ Error: 429 Too Many Requests from Adzuna API
 
 **Issue 4: Large Model Size**
 ```
-Error: Render deployment fails due to slug size
+Error: Container image size too large or build timeout
 ```
 **Solution:**
 ```python
 # Use smaller model if needed
 model = SentenceTransformer('all-MiniLM-L6-v2')  # ~80MB
 # Instead of larger models like all-mpnet-base-v2 (~420MB)
+
+# Or increase Cloud Run memory and timeout settings
+# gcloud run deploy --memory 2Gi --timeout 300
 ```
 
 **Issue 5: Slow API Response**
@@ -2874,8 +3031,8 @@ Fixes #45
 
 docs(readme): update deployment instructions
 
-Added step-by-step guide for Render deployment
-including environment variable setup.
+Added step-by-step guide for Google Cloud Run deployment
+including Docker containerization and Cloud Build setup.
 ```
 
 **Commit Types:**
@@ -3016,7 +3173,8 @@ Brief description of changes
 - Flask: https://flask.palletsprojects.com/
 - Sentence-Transformers: https://www.sbert.net/
 - Adzuna API: https://developer.adzuna.com/
-- Render Deployment: https://render.com/docs
+- Google Cloud Run: https://cloud.google.com/run/docs
+- Cloud Build: https://cloud.google.com/build/docs
 
 **Learning Resources:**
 - Sentence-BERT Paper: https://arxiv.org/abs/1908.10084
