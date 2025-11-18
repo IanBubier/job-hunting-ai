@@ -39,12 +39,22 @@ def search_jobs():
             return jsonify({"success": False, "error": error}), 400
 
         # Sanitize text inputs (defense-in-depth, though Jinja2 auto-escapes)
-        if "keywords" in data:
-            data["keywords"] = sanitize_input(data["keywords"])
-        if "location" in data:
-            data["location"] = sanitize_input(data["location"])
-        if "skills" in data and isinstance(data["skills"], list):
-            data["skills"] = [sanitize_input(skill) for skill in data["skills"]]
+        keywords = sanitize_input(data.get("keywords", "") or "")
+        location = sanitize_input(data.get("location", "") or "")
+        skills = data.get("skills", [])
+
+        if isinstance(skills, list):
+            skills = [sanitize_input(s) for s in skills]
+        else:
+            skills = []
+
+        # If remote filter is active, inject "remote" into keywords
+        if data.get("remote"):
+            keywords = f"{keywords} remote".strip()
+
+        data["keywords"] = keywords
+        data["location"] = location
+        data["skills"] = skills
 
         # Fetch jobs from Adzuna
         # Combine keywords and skills for better Adzuna search results
