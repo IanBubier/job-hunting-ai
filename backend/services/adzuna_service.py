@@ -69,8 +69,11 @@ class AdzunaService:
             "results_per_page": min(max_results, 50),
             "what": keywords,
             "where": location,
-            "distance": distance,
         }
+
+        # Only include distance if it's a valid number (not "any")
+        if distance and distance != "any":
+            params["distance"] = distance
 
         try:
             response = requests.get(

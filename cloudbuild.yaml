@@ -1,0 +1,50 @@
+# Cloud Build configuration for Google Cloud Run deployment
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID",
+        "-t",
+        "gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest",
+        ".",
+      ]
+
+  # Push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "--all-tags", "gcr.io/$PROJECT_ID/job-hunting-ai-backend"]
+
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "job-hunting-ai-backend"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest"
+      - "--region"
+      - "us-west1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--port"
+      - "8080"
+      - "--memory"
+      - "2Gi"
+      - "--cpu"
+      - "2"
+      - "--timeout"
+      - "300"
+      - "--set-env-vars"
+      - "FLASK_ENV=production,PYTHONUNBUFFERED=1,USE_MOCK=0"
+
+images:
+  - "gcr.io/$PROJECT_ID/job-hunting-ai-backend:latest"
+  - "gcr.io/$PROJECT_ID/job-hunting-ai-backend:$BUILD_ID"
+
+options:
+  machineType: "N1_HIGHCPU_8"
+  logging: CLOUD_LOGGING_ONLY

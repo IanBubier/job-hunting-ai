@@ -17,3 +17,11 @@ def test_search_jobs_no_results():
     svc = AdzunaService()
     res = svc.search_jobs("asdkfjaskdfjaskdfj", "Nowhere", "1000", max_results=5)
     assert res == []
+
+
+def test_remote_jobs_search():
+    svc = AdzunaService()
+    res = svc.search_jobs("developer remote", None, None, max_results=5)
+    assert isinstance(res, list)
+    for job in res:
+        assert "remote" in job.title.lower() or "remote" in job.description.lower()
