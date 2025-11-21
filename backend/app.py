@@ -29,7 +29,7 @@ def create_app():
             if status >= 500:
                 app.logger.exception("http_error")
             else:
-                app.logger.info("client_error")
+                app.logger.error(f"client_error: {e}")
             return (
                 jsonify(
                     {
