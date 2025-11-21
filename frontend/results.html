@@ -43,7 +43,8 @@
         <!-- Sorting -->
         <label for="sort" class="sort-label">Sort by:</label>
         <select id="sort" class="sort-select">
-          <option value="relevance">Relevance</option>
+          <option value="relevance_desc">Relevance (High → Low)</option>
+          <option value="relevance_asc">Relevance (Low → High)</option>
           <option value="recent">Most Recent</option>
         </select>
 
@@ -110,12 +111,21 @@
           const cards = Array.from(container.children);
 
           cards.sort((a, b) => {
+            const scoreA = parseFloat(a.dataset.score) || 0;
+            const scoreB = parseFloat(b.dataset.score) || 0;
+
             if (sortBy === "recent") {
               return new Date(b.dataset.date) - new Date(a.dataset.date);
             }
 
-            if (sortBy === "relevance") {
-              return b.dataset.score - a.dataset.score;
+            if (sortBy === "relevance_desc") {
+              // High → Low
+              return scoreB - scoreA;
+            }
+
+            if (sortBy === "relevance_asc") {
+              // Low → High
+              return scoreA - scoreB;
             }
 
             return 0;
