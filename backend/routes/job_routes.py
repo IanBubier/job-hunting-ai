@@ -17,6 +17,53 @@ matching_service = MatchingService(ml_service)
 adzuna_service = AdzunaService(
     app_id=os.getenv("ADZUNA_APP_ID"), app_key=os.getenv("ADZUNA_APP_KEY")
 )
+@jobs_bp.route("/mock-results")
+def mock_results_page():
+    """
+    (For Developers only): Method sets up a mock rendering of the results page using made-up data. 
+    The rendering can be accessed through http://127.0.0.1:5000/search/mock-results
+    """
+    results = {
+    "success": True,
+    "count": 3,
+    "query_time_ms": 142,
+    "results": [
+        {
+            "title": "Software Engineer (Backend)",
+            "company": "OpenAI",
+            "location": "San Francisco, CA",
+            "salary_min": 130000,
+            "salary_max": 180000,
+            "description": "Work on high-performance backend systems that power our API platform and deploy cutting-edge models to production.",
+            "url": "https://www.openai.com/careers/backend-engineer",
+            "final_score": 96,
+            "posted_date": "2025-11-05"
+        },
+        {
+            "title": "Machine Learning Engineer",
+            "company": "Google DeepMind",
+            "location": "Mountain View, CA",
+            "salary_min": 150000,
+            "salary_max": 210000,
+            "description": "Develop and optimize state-of-the-art machine learning algorithms for multimodal AI applications.",
+            "url": "https://careers.google.com/jobs/ml-engineer-deepmind",
+            "final_score": 91,
+            "posted_date": "2025-11-03"
+        },
+        {
+            "title": "Full Stack Developer",
+            "company": "Blackhawk Network",
+            "location": "Coppell, TX",
+            "salary_min": 110000,
+            "salary_max": 140000,
+            "description": "Build and maintain scalable web applications integrating payment, gift card, and AI-powered recommendation systems.",
+            "url": "https://blackhawknetwork.com/careers/fullstack-developer",
+            "final_score": 88,
+            "posted_date": "2025-11-07"
+        }
+    ]
+}
+    return render_template("results.html", page_name="Job Results", **results)
 
 
 @jobs_bp.route("/")
