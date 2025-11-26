@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSkillsInput() {
   const chips = Array.from(chipsContainer.querySelectorAll('.chip'))
     .map(chip => chip.childNodes[0].textContent.trim());
-  document.querySelector('#skills-input').value = chips.join(',');
+  document.querySelector('#skills-hidden').value = chips.join(',');
 }
 
   addSkillBtn.addEventListener('click', () => {
