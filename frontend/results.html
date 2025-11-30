@@ -84,7 +84,7 @@
                 {% endif %}
 
                 {% if job.posted_date %}
-                  <p class="posted-date"> {{ job.posted_date }}</p>
+                  <p class="posted-date"> {{ job.posted_date.split("T")[0] }}</p>
                 {% endif %}
               </div>
             {% else %}
