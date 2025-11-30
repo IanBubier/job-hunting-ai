@@ -18,6 +18,7 @@ adzuna_service = AdzunaService(
     app_id=os.getenv("ADZUNA_APP_ID"), app_key=os.getenv("ADZUNA_APP_KEY")
 )
 
+
 @jobs_bp.route("/")
 def search():
     """Render job search page."""
