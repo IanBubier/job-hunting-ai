@@ -29,66 +29,68 @@
     <!-- Results Section -->
     <main>
       <section class="results-section">
-        <h1 class="page-title">Search Results</h1>
+        <div class="container">
+          <h1 class="page-title">Search Results</h1>
 
-        <!-- Summary -->
-        <div class="results-summary">
-          {% if count %}
-            <p><strong>Found {{ count }} matching jobs</strong></p>
-          {% else %}
-            <p><strong>No jobs found.</strong></p>
-          {% endif %}
-        </div>
+          <!-- Summary -->
+          <div class="results-summary">
+            {% if count %}
+              <p><strong>Found {{ count }} matching jobs</strong></p>
+            {% else %}
+              <p><strong>No jobs found.</strong></p>
+            {% endif %}
+          </div>
 
-        <!-- Sorting -->
-        <label for="sort" class="sort-label">Sort by:</label>
-        <select id="sort" class="sort-select">
-          <option value="relevance_desc">Relevance (High → Low)</option>
-          <option value="relevance_asc">Relevance (Low → High)</option>
-          <option value="recent">Most Recent</option>
-        </select>
+          <!-- Sorting -->
+          <label for="sort" class="sort-label">Sort by:</label>
+          <select id="sort" class="sort-select">
+            <option value="relevance_desc">Relevance (High → Low)</option>
+            <option value="relevance_asc">Relevance (Low → High)</option>
+            <option value="recent">Most Recent</option>
+          </select>
 
-        <!-- Results Grid -->
-        <div id="results-container" class="results-list">
-          {% for job in results %}
-            <div
-              class="job-card"
-              data-score="{{ job.final_score }}"
-              data-date="{{ job.posted_date }}"
-            >
-              <div class="job-header">
-                <h2>{{ job.title }}</h2>
-                {% if job.final_score %}
-                  <span class="match-score">{{ job.final_score }}%</span>
+          <!-- Results Grid -->
+          <div id="results-container" class="results-list">
+            {% for job in results %}
+              <div
+                class="job-card"
+                data-score="{{ job.final_score }}"
+                data-date="{{ job.posted_date }}"
+              >
+                <div class="job-header">
+                  <h2>{{ job.title }}</h2>
+                  {% if job.final_score %}
+                    <span class="match-score">{{ job.final_score }}%</span>
+                  {% endif %}
+                </div>
+
+                <p class="job-company">{{ job.company }}</p>
+                <p class="job-location">{{ job.location }}</p>
+
+                {% if job.salary_min and job.salary_max %}
+                  <p class="job-meta">
+                    ${{ job.salary_min }} – ${{ job.salary_max }}
+                  </p>
+                {% endif %}
+
+                {% if job.description %}
+                  <p class="job-desc">{{ job.description | truncate(120) }}</p>
+                {% endif %}
+
+                {% if job.url %}
+                  <a class="btn-apply" href="{{ job.url }}" target="_blank">
+                    Apply now
+                  </a>
+                {% endif %}
+
+                {% if job.posted_date %}
+                  <p class="posted-date"> {{ job.posted_date.split("T")[0] }}</p>
                 {% endif %}
               </div>
-
-              <p class="job-company">{{ job.company }}</p>
-              <p class="job-location">{{ job.location }}</p>
-
-              {% if job.salary_min and job.salary_max %}
-                <p class="job-meta">
-                  ${{ job.salary_min }} – ${{ job.salary_max }}
-                </p>
-              {% endif %}
-
-              {% if job.description %}
-                <p class="job-desc">{{ job.description | truncate(120) }}</p>
-              {% endif %}
-
-              {% if job.url %}
-                <a class="btn-apply" href="{{ job.url }}" target="_blank">
-                  Apply now
-                </a>
-              {% endif %}
-
-              {% if job.posted_date %}
-                <p class="posted-date"> {{ job.posted_date }}</p>
-              {% endif %}
-            </div>
-          {% else %}
-            <p>No job results available.</p>
-          {% endfor %}
+            {% else %}
+              <p>No job results available.</p>
+            {% endfor %}
+          </div>
         </div>
       </section>
     </main>

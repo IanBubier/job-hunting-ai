@@ -39,13 +39,18 @@
                 <!-- chip class for selected skills REF: https://www.w3schools.com/howto/howto_css_contact_chips.asp-->
                 <div class="chips"></div>
                 <div class="input-with-icon">
+                <!-- Visual for input field -->
                   <input
                     type="text"
                     id="skills-input"
-                    name="skills"
                     class="input"
                     placeholder="Type to add skills…"
-                    autocomplete="off" />
+                    autocomplete="off"
+                    type="hidden" />
+                  <input type="hidden" name="skills" id="skills-hidden" />
+                  <!--Hidden input. Separation of inputs allows for input field to be 
+                  visually empty while skills string builds -->
+
                   <button type="button" id="add-skill-btn" class="icon-button" title="Add skill">
                     <!-- Button ref: https://heroicons.com/ -->
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
@@ -91,17 +96,18 @@
             <div class="col">
               <p class="field">
                 <label for="keywords" class="label">Title / Keywords</label>
-                <input
-                  type="text"
-                  id="keywords"
-                  name="keywords"
-                  class="input"
-                  placeholder="Backend Engineer" />
+                <span class="input-with-icon">
+                  <input
+                    type="text"
+                    id="keywords"
+                    name="keywords"
+                    class="input"
+                    placeholder="Backend Engineer" />
+                </span>
               </p>
-
               <p class="field">
                 <label for="distance" class="label">Distance</label>
-                <span class="select-wrap">
+                <span class="input-with-icon">
                   <select id="distance" name="distance" class="select">
                     <option value="10">Within 10 miles</option>
                     <option value="25" selected>Within 25 miles</option>
